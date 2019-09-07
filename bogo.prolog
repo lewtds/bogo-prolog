@@ -7,7 +7,7 @@ dat_dau(Input, Mod, Tone, Output) :-
     vowel_nucleus_mod_tone(V_out, V_raw, Mod, Tone),
     atomic_list_concat([I, V_out, F], Output).
 
-syllable(I, V, F) --> coni(I), vowel(V), conf(F).
+syllable(I, V, F) --> consonant_initial(I), vowel(V), consonant_final(F).
 
 vowel(V) --> vowel_chars(Vs), { atom_chars(V, Vs) }.
 
@@ -19,44 +19,44 @@ vowel_char(C) --> [C], {
     member(C, AtomList)
 }.
 
-coni('') --> [].
-coni(m) --> [m].
-coni(n) --> [n].
-coni(nh) --> [n, h].
-coni(ng) --> [n, g].
-coni(ngh) --> [n, g, h].
-coni(p) --> [p].
-coni(t) --> [t].
-coni(ch) --> [c, h].
-coni(c) --> [c].
-coni(k) --> [k].
-coni(qu) --> [q, u].
-coni(ph) --> [p, h].
-coni(th) --> [t, h].
-coni(kh) --> [k, h].
-coni(b) --> [b].
-coni(đ) --> [đ].
-coni(s) --> [s].
-coni(x) --> [x].
-coni(h) --> [h].
-coni(d) --> [d].
-coni(gi) --> [g, i].
-coni(g) --> [g].
-coni(gh) --> [g, h].
-coni(v) --> [v].
-coni(l) --> [l].
-coni(r) --> [r].
+consonant_initial('') --> [].
+consonant_initial(m) --> [m].
+consonant_initial(n) --> [n].
+consonant_initial(nh) --> [n, h].
+consonant_initial(ng) --> [n, g].
+consonant_initial(ngh) --> [n, g, h].
+consonant_initial(p) --> [p].
+consonant_initial(t) --> [t].
+consonant_initial(ch) --> [c, h].
+consonant_initial(c) --> [c].
+consonant_initial(k) --> [k].
+consonant_initial(qu) --> [q, u].
+consonant_initial(ph) --> [p, h].
+consonant_initial(th) --> [t, h].
+consonant_initial(kh) --> [k, h].
+consonant_initial(b) --> [b].
+consonant_initial(đ) --> [đ].
+consonant_initial(s) --> [s].
+consonant_initial(x) --> [x].
+consonant_initial(h) --> [h].
+consonant_initial(d) --> [d].
+consonant_initial(gi) --> [g, i].
+consonant_initial(g) --> [g].
+consonant_initial(gh) --> [g, h].
+consonant_initial(v) --> [v].
+consonant_initial(l) --> [l].
+consonant_initial(r) --> [r].
 
-conf('') --> [].
-conf(n) --> [n].
-conf(nh) --> [n, h].
-conf(ng) --> [n, g].
-conf(c) --> [c].
-conf(ch) --> [c, h].
-conf(p) --> [p].
-conf(t) --> [t].
-conf(n) --> [n].
-conf(m) --> [m].
+consonant_final('') --> [].
+consonant_final(n) --> [n].
+consonant_final(nh) --> [n, h].
+consonant_final(ng) --> [n, g].
+consonant_final(c) --> [c].
+consonant_final(ch) --> [c, h].
+consonant_final(p) --> [p].
+consonant_final(t) --> [t].
+consonant_final(n) --> [n].
+consonant_final(m) --> [m].
 
 vowel_nucleus_mod_tone(a, a, mod_none, tone_ngang).
 vowel_nucleus_mod_tone(à, a, mod_none, tone_huyen).
