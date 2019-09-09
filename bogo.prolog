@@ -4,6 +4,7 @@ key_effect(r, add_tone(tone_hoi)).
 key_effect(x, add_tone(tone_nga)).
 key_effect(j, add_tone(tone_nang)).
 
+% TODO: Maybe having separate effects for â, ê, ô; same with ơ and ư
 key_effect(a, add_vowel_mod(mod_hat)).
 key_effect(e, add_vowel_mod(mod_hat)).
 key_effect(o, add_vowel_mod(mod_hat)).
@@ -24,52 +25,55 @@ process_key_sequence([Key|Rest], CurrentString, Output) :-
 process_key_sequence([], CurrentString, CurrentString).
 
 % Try applying the effect of the key, assuming that there is one. The resulting string must be different.
-process_key(CurrentString, Key, Output) :-
-    apply_key_effect(CurrentString, Key, Output),
-    Output \= CurrentString.
+% Performance optimization idea: give out both an output string and a syllable term and reuse the term for the next cycle.
+process_key(CurrentString, Key, OutString) :-
+    % break the syllable down into initial consonant, vowel nucleus and final consonant
+    once(phrase(syllable(I, V, F), CurrentString)),
+
+    apply_key_effect(s(I, V, F), Key, s(I2, V2, F2)),
+    shortcut_rule(I2, V2, F2, I3, V3, F3),
+
+    atomic_list_concat([I3, V3, F3], OutputAtom),
+    atom_chars(OutputAtom, OutString),
+    OutString \= CurrentString.
+
+shortcut_rule(I, ưo, F, I, ươ, F).
+shortcut_rule(I, V, F, I, V, F).
 
 % otherwise, append the key to the end of the current string
-process_key(CurrentString, Key, Output) :-
-    append(CurrentString, [Key], Output).
+process_key(CurrentString, Key, OutString) :-
+    append(CurrentString, [Key], OutString).
 
-apply_key_effect(CurrentString, Key, Output) :-
+apply_key_effect(InSyllable, Key, OutSyllable) :-
     key_effect(Key, add_tone(Tone)),
-    syllable_tone(CurrentString, Tone, Output).
+    syllable_tone(InSyllable, Tone, OutSyllable).
 
-apply_key_effect(CurrentString, Key, Output) :-
+apply_key_effect(InSyllable, Key, OutSyllable) :-
     key_effect(Key, add_vowel_mod(Mod)),
-    syllable_vowel_mod(CurrentString, Key, Mod, Output).
+    syllable_vowel_mod(InSyllable, Key, Mod, OutSyllable).
 
-apply_key_effect(CurrentString, Key, Output) :-
+apply_key_effect(InSyllable, Key, OutSyllable) :-
     key_effect(Key, add_consonant_mod(Mod)),
-    syllable_consonant_mod(CurrentString, Mod, Output).
+    syllable_consonant_mod(InSyllable, Mod, OutSyllable).
 
-% TODO extract the beginning and closing parts of these following syllable* relations into the higher level
-syllable_vowel_mod(Input, Key, Mod, Output) :-
-    % break the syllable down into initial consonant, vowel nucleus and final consonant
-    once(phrase(syllable(I, V, F), Input)),
-    % clear the tone and mark
+apply_key_effect(s(I, V, F), Key, s(I, V, F2)) :- atom_concat(F, Key, F2).
+apply_key_effect(s(I, V, ''), Key, s(I, V2, '')) :- atom_concat(V, Key, V2).
+apply_key_effect(s(I, '', ''), Key, s(I2, '', '')) :- atom_concat(I, Key, I2).
+
+syllable_vowel_mod(s(I, V, F), Key, Mod, s(I, V_out, F)) :-
     vowel_nucleus_mod_tone(V, V_raw, _, Tone, _),
-    vowel_nucleus_mod_tone(V_out, V_raw, Mod, Tone, Key),
-    atomic_list_concat([I, V_out, F], OutputAtom),
-    atom_chars(OutputAtom, Output).
+    vowel_nucleus_mod_tone(V_out, V_raw, Mod, Tone, Key).
 
-syllable_tone(Input, Tone, Output) :-
-    % break the syllable down into initial consonant, vowel nucleus and final consonant
-    once(phrase(syllable(I, V, F), Input)),
-    % clear the tone and mark
+syllable_tone(s(I, V, F), Tone, s(I, V_out, F)) :-
     vowel_nucleus_mod_tone(V, V_raw, Mod, _, _),
-    % add the intended ones
-    vowel_nucleus_mod_tone(V_out, V_raw, Mod, Tone, _),
-    atomic_list_concat([I, V_out, F], OutputAtom),
-    atom_chars(OutputAtom, Output).
+    vowel_nucleus_mod_tone(V_out, V_raw, Mod, Tone, _).
 
 % there is the only case of d -> đ here so it's hard-coded
-syllable_consonant_mod(Input, _, Output) :-
-    % break the syllable down into initial consonant, vowel nucleus and final consonant
-    once(phrase(syllable(d, V, F), Input)),
-    atomic_list_concat([đ, V, F], OutputAtom),
-    atom_chars(OutputAtom, Output).
+syllable_consonant_mod(s(d, V, F), _, s(đ, V, F)).
+
+%%%%%%%%%%%%%
+% Parser section
+%%%%%%%%%%%%%
 
 syllable(I, V, F) --> consonant_initial(I), vowel(V), consonant_final(F).
 
