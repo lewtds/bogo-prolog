@@ -1,14 +1,16 @@
 % needs SWI-Prolog version 8.1.13 for with_tty_raw
-interactive :- with_tty_raw(duh([])).
+interactive :- with_tty_raw(loop_process_key([])).
 
-duh(Sequence) :-
+loop_process_key(Sequence) :-
     get_char(A),
-    (A \= ' ',
-    append(Sequence, [A], B),
-    process_key_sequence(B, [], Next),
-    atom_chars(Atom, Next),
-    writeln((Sequence, Atom)),
-    duh(B) ; duh([])).
+    (   A \= ' ',
+        append(Sequence, [A], B),
+        process_key_sequence(B, [], Next),
+        atom_chars(Atom, Next),
+        writeln((Sequence, Atom)),
+        loop_process_key(B)
+    ;   loop_process_key([]) % start a new sequence with space character
+    ).
 
 key_effect(f, add_tone(tone_huyen)).
 key_effect(s, add_tone(tone_sac)).
