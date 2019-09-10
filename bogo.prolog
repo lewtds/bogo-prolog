@@ -1,3 +1,15 @@
+% needs SWI-Prolog version 8.1.13 for with_tty_raw
+interactive :- with_tty_raw(duh([])).
+
+duh(Sequence) :-
+    get_char(A),
+    (A \= ' ',
+    append(Sequence, [A], B),
+    process_key_sequence(B, [], Next),
+    atom_chars(Atom, Next),
+    writeln((Sequence, Atom)),
+    duh(B) ; duh([])).
+
 key_effect(f, add_tone(tone_huyen)).
 key_effect(s, add_tone(tone_sac)).
 key_effect(r, add_tone(tone_hoi)).
@@ -24,7 +36,7 @@ process_key_sequence([Key|Rest], CurrentString, Output) :-
 
 process_key_sequence([], CurrentString, CurrentString).
 
-% Try applying the effect of the key, assuming that there is one. The resulting string must be different.
+% Try applying the effect of the key, assuming that there is one.
 % Performance optimization idea: give out both an output string and a syllable term and reuse the term for the next cycle.
 process_key(CurrentString, Key, OutString) :-
     % break the syllable down into initial consonant, vowel nucleus and final consonant
@@ -34,15 +46,10 @@ process_key(CurrentString, Key, OutString) :-
     shortcut_rule(I2, V2, F2, I3, V3, F3),
 
     atomic_list_concat([I3, V3, F3], OutputAtom),
-    atom_chars(OutputAtom, OutString),
-    OutString \= CurrentString.
+    atom_chars(OutputAtom, OutString).
 
 shortcut_rule(I, ưo, F, I, ươ, F).
 shortcut_rule(I, V, F, I, V, F).
-
-% otherwise, append the key to the end of the current string
-process_key(CurrentString, Key, OutString) :-
-    append(CurrentString, [Key], OutString).
 
 apply_key_effect(InSyllable, Key, OutSyllable) :-
     key_effect(Key, add_tone(Tone)),
