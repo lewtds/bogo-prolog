@@ -6,13 +6,13 @@
 interactive :- with_tty_raw(loop_process_key([])).
 
 loop_process_key(Sequence) :-
-    get_char(A),
-    (   A \= ' ',
-        append(Sequence, [A], B),
-        process_key_sequence(B, [], Next),
-        atom_chars(Atom, Next),
-        writeln((Sequence, Atom)),
-        loop_process_key(B)
+    get_char(C),
+    (   C \= ' ',
+        append(Sequence, [C], Sequence2),
+        process_key_sequence(Sequence2, [], OutCharList),
+        atom_chars(Atom, OutCharList),
+        writeln((Sequence2, Atom)),
+        loop_process_key(Sequence2)
     ;   loop_process_key([]) % start a new sequence with space character
     ).
 
