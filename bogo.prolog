@@ -1,8 +1,24 @@
+% Needs SWI-Prolog version 8.1.13 for with_tty_raw
+%
 % Usage example:
 % ?- consult('bogo.prolog').
 % ?- interactive.
 %
-% Then start typing. Needs SWI-Prolog version 8.1.13 for with_tty_raw
+% Then start typing.
+%
+% [t],t
+% [t,r],tr
+% [t,r,u],tru
+% [t,r,u,o],truo
+% [t,r,u,o,w],trươ
+% [t,r,u,o,w,n],trươn
+% [t,r,u,o,w,n,g],trương
+% [t,r,u,o,w,n,g,f],trường
+% [h],h
+% [h,o],ho
+% [h,o,p],hop
+% [h,o,p,w],hơp
+% [h,o,p,w,j],hợp
 interactive :- with_tty_raw(loop_process_key([])).
 
 loop_process_key(Sequence) :-
