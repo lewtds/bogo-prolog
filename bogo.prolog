@@ -1,4 +1,8 @@
-% needs SWI-Prolog version 8.1.13 for with_tty_raw
+% Usage example:
+% ?- consult('bogo.prolog').
+% ?- interactive.
+%
+% Then start typing. Needs SWI-Prolog version 8.1.13 for with_tty_raw
 interactive :- with_tty_raw(loop_process_key([])).
 
 loop_process_key(Sequence) :-
