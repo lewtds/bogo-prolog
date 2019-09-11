@@ -33,6 +33,8 @@ loop_process_key(Sequence) :-
     ).
 
 % TODO: Upper case support
+
+% TELEX
 key_effect(f, add_tone(tone_huyen)).
 key_effect(s, add_tone(tone_sac)).
 key_effect(r, add_tone(tone_hoi)).
@@ -48,6 +50,23 @@ key_effect(w, add_vowel_mod(mod_horn_u)).
 key_effect(w, add_vowel_mod(mod_breve_a)).
 
 key_effect(d, add_consonant_mod(mod_dash_d)).
+
+% VNI
+key_effect('2', add_tone(tone_huyen)).
+key_effect('1', add_tone(tone_sac)).
+key_effect('3', add_tone(tone_hoi)).
+key_effect('4', add_tone(tone_nga)).
+key_effect('5', add_tone(tone_nang)).
+
+key_effect('6', add_vowel_mod(mod_hat_a)).
+key_effect('6', add_vowel_mod(mod_hat_e)).
+key_effect('6', add_vowel_mod(mod_hat_o)).
+key_effect('7', add_vowel_mod(mod_horn_uo)).
+key_effect('7', add_vowel_mod(mod_horn_o)).
+key_effect('7', add_vowel_mod(mod_horn_u)).
+key_effect('8', add_vowel_mod(mod_breve_a)).
+
+key_effect('9', add_consonant_mod(mod_dash_d)).
 
 % Usage example:
 %
