@@ -32,6 +32,7 @@ loop_process_key(Sequence) :-
     ;   loop_process_key([]) % start a new sequence with space character
     ).
 
+% TODO: Upper case support
 key_effect(f, add_tone(tone_huyen)).
 key_effect(s, add_tone(tone_sac)).
 key_effect(r, add_tone(tone_hoi)).
