@@ -174,6 +174,9 @@ consonant_initial(gh) --> [g, h].
 consonant_initial(v) --> [v].
 consonant_initial(l) --> [l].
 consonant_initial(r) --> [r].
+% for the dzũng zũng people
+consonant_initial(dz) --> [d, z].
+consonant_initial(z) --> [z].
 
 consonant_final('') --> [].
 consonant_final(n) --> [n].
