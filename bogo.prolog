@@ -129,6 +129,7 @@ consonant_initial(ch) --> [c, h].
 consonant_initial(c) --> [c].
 consonant_initial(k) --> [k].
 consonant_initial(qu) --> [q, u].
+consonant_initial(q) --> [q]. % I'm a bit iffy on this case
 consonant_initial(ph) --> [p, h].
 consonant_initial(th) --> [t, h].
 consonant_initial(kh) --> [k, h].
