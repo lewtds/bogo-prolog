@@ -85,9 +85,9 @@ apply_key_effect(InSyllable, Key, OutSyllable) :-
     key_effect(Key, add_consonant_mod(Mod)),
     syllable_consonant_mod(InSyllable, Mod, OutSyllable).
 
-apply_key_effect(s(I, V, F), Key, s(I, V, F2)) :- atom_concat(F, Key, F2).
-apply_key_effect(s(I, V, ''), Key, s(I, V2, '')) :- atom_concat(V, Key, V2).
 apply_key_effect(s(I, '', ''), Key, s(I2, '', '')) :- atom_concat(I, Key, I2).
+apply_key_effect(s(I, V, ''), Key, s(I, V2, '')) :- atom_concat(V, Key, V2).
+apply_key_effect(s(I, V, F), Key, s(I, V, F2)) :- atom_concat(F, Key, F2).
 
 syllable_vowel_mod(s(I, V, F), Key, Mod, s(I, V_out, F)) :-
     vowel_nucleus_mod_tone(V, V_raw, _, Tone, _),
