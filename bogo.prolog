@@ -106,6 +106,7 @@ apply_key_effect(InSyllable, Key, OutSyllable) :-
     key_effect(Key, add_consonant_mod(Mod)),
     syllable_consonant_mod(InSyllable, Mod, OutSyllable).
 
+% If none of the transformation rules apply, append the key to the end of the syllable
 apply_key_effect(s(I, '', ''), Key, s(I2, '', '')) :- atom_concat(I, Key, I2).
 apply_key_effect(s(I, V, ''), Key, s(I, V2, '')) :- atom_concat(V, Key, V2).
 apply_key_effect(s(I, V, F), Key, s(I, V, F2)) :- atom_concat(F, Key, F2).
@@ -182,6 +183,7 @@ consonant_final(m) --> [m].
 % vowel nucleus transformation database schema:
 %   resulting vowel, base characters, vowel modification, tone
 %
+% FIXME: these facts are highly redundant/compressible. What would be a good representation?
 vowel_nucleus_mod_tone(a, a, mod_none, tone_ngang).
 vowel_nucleus_mod_tone(à, a, mod_none, tone_huyen).
 vowel_nucleus_mod_tone(á, a, mod_none, tone_sac).
