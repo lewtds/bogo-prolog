@@ -86,6 +86,9 @@ process_key_sequence([Key|Rest], CurrentString, Output) :-
 
 process_key_sequence([], CurrentString, CurrentString).
 
+% fall back to the raw sequence if processing fails (vowel -> vơel)
+process_key_sequence(Keys, [], Keys).
+
 % Try applying the effect of the key, assuming that there is one.
 % Performance optimization idea: give out both an output string and a syllable term and reuse the term for the next cycle.
 process_key(CurrentString, Key, OutString) :-
@@ -96,7 +99,10 @@ process_key(CurrentString, Key, OutString) :-
     shortcut_rule(I2, V2, F2, I3, V3, F3),
 
     atomic_list_concat([I3, V3, F3], OutputAtom),
-    atom_chars(OutputAtom, OutString).
+    atom_chars(OutputAtom, OutString),
+
+    % require that the output must be parsable, this is to weed out non-Vietnamese words like vowel -> vơel
+    once(phrase(syllable(_, _, _), OutString)).
 
 shortcut_rule(I, ưo, F, I, ươ, F).
 shortcut_rule(I, V, F, I, V, F).
