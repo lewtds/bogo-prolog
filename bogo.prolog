@@ -316,11 +316,11 @@ vowel_nucleus_mod_tone(iễu, ieu, mod_hat, tone_nga, '').
 vowel_nucleus_mod_tone(iệu, ieu, mod_hat, tone_nang, '').
 
 vowel_nucleus_mod_tone(oa, oa, mod_none, tone_ngang, '').
-vowel_nucleus_mod_tone(òa, oa, mod_none, tone_huyen, '').
-vowel_nucleus_mod_tone(óa, oa, mod_none, tone_sac, '').
-vowel_nucleus_mod_tone(ỏa, oa, mod_none, tone_hoi, '').
-vowel_nucleus_mod_tone(õa, oa, mod_none, tone_nga, '').
-vowel_nucleus_mod_tone(ọa, oa, mod_none, tone_nang, '').
+vowel_nucleus_mod_tone(oà, oa, mod_none, tone_huyen, '').
+vowel_nucleus_mod_tone(oá, oa, mod_none, tone_sac, '').
+vowel_nucleus_mod_tone(oả, oa, mod_none, tone_hoi, '').
+vowel_nucleus_mod_tone(oã, oa, mod_none, tone_nga, '').
+vowel_nucleus_mod_tone(oạ, oa, mod_none, tone_nang, '').
 
 vowel_nucleus_mod_tone(oi, oi, mod_none, tone_ngang, '').
 vowel_nucleus_mod_tone(òi, oi, mod_none, tone_huyen, '').
