@@ -174,7 +174,8 @@ consonant_initial(s) --> [s].
 consonant_initial(x) --> [x].
 consonant_initial(h) --> [h].
 consonant_initial(d) --> [d].
-consonant_initial(gi) --> [g, i].
+% TODO gìn doesn't work
+consonant_initial(gi), [V] --> [g, i], vowel(V).
 consonant_initial(g) --> [g].
 consonant_initial(gh) --> [g, h].
 consonant_initial(v) --> [v].
