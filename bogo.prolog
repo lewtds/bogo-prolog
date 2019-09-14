@@ -520,3 +520,12 @@ vowel_nucleus_mod_tone(ưỡu, uou, mod_horn_uo, tone_nga).
 vowel_nucleus_mod_tone(ượu, uou, mod_horn_uo, tone_nang).
 
 vowel_nucleus_mod_tone(V, V, mod_none, tone_ngang).
+
+% x(Result, Raw, Mod, tone_ngang) :- duh(Raw, Mod, (Result, _, _, _, _, _)).
+% x(Result, Raw, Mod, tone_huyen) :- duh(Raw, Mod, (_, Result, _, _, _, _)).
+% x(Result, Raw, Mod, tone_sac)   :- duh(Raw, Mod, (_, _, Result, _, _, _)).
+% x(Result, Raw, Mod, tone_hoi)   :- duh(Raw, Mod, (_, _, _, Result, _, _)).
+% x(Result, Raw, Mod, tone_nga)   :- duh(Raw, Mod, (_, _, _, _, Result, _)).
+% x(Result, Raw, Mod, tone_nang)  :- duh(Raw, Mod, (_, _, _, _, _, Result)).
+
+% duh(a, mod_hat_a, (â, ầ, ấ, ẩ, ẫ, ậ)).
