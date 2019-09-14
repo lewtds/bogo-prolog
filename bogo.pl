@@ -1,3 +1,5 @@
+:- set_prolog_flag(encoding, utf8).
+
 % Needs SWI-Prolog version 8.1.13 for with_tty_raw
 %
 % Usage example:
@@ -80,6 +82,14 @@ key_effect('9', add_consonant_mod(mod_dash_d)).
 % ?- process_key_sequence([b, a, n, s, w], [] , Output).
 %    Output = [b, ắ, n].
 %
+
+process_nice(AtomIn, OutList) :-
+    atom_chars(AtomIn, Sequence),
+    process_key_sequence(Sequence, OutList).
+
+process_key_sequence(Sequence, Output) :-
+    process_key_sequence(Sequence, [], Output).
+
 process_key_sequence([Key|Rest], CurrentString, Output) :-
     once(process_key(CurrentString, Key, Output1)),
     process_key_sequence(Rest, Output1, Output).
