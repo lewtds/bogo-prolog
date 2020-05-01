@@ -33,7 +33,7 @@ main(int argc, char **argv)
 
   /* Lookup calc/1 and make the arguments and call */
 
-  { predicate_t pred = PL_predicate("process_nice", 2, "user");
+  { predicate_t pred = PL_predicate("process_atom", 2, "user");
     term_t h0 = PL_new_term_refs(2);
     term_t h1 = h0 + 1;
     int rval;

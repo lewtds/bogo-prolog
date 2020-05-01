@@ -85,7 +85,7 @@ key_effect('9', add_consonant_mod(mod_dash_d)).
 %    Output = [b, ắ, n].
 %
 
-process_nice(AtomIn, OutList) :-
+process_atom(AtomIn, OutList) :-
     atom_chars(AtomIn, Sequence),
     process_key_sequence(Sequence, OutList).
 
@@ -107,14 +107,16 @@ process_key(CurrentString, Key, OutString) :-
     % break the syllable down into initial consonant, vowel nucleus and final consonant
     once(phrase(syllable(I, V, F), CurrentString)),
 
-    apply_key_effect(s(I, V, F), Key, s(I2, V2, F2)),
-    rebalance_incomplete_form(s(I2, V2, F2), s(I3, V3, F3)),
+    apply_key_effect(s(I, V, F), Key, Out),
+    rebalance_incomplete_form(Out, CleanedSyllable),
 
-    atomic_list_concat([I3, V3, F3], OutputAtom),
+    syllable_atom(CleanedSyllable, OutputAtom),
     atom_chars(OutputAtom, OutString),
 
     % require that the output must be parsable, this is to weed out non-Vietnamese words like vowel -> vơel
     once(phrase(syllable(_, _, _), OutString)).
+
+syllable_atom(s(I, V, F), Atom) :- atomic_list_concat([I, V, F], Atom).
 
 apply_key_effect(InSyllable, Key, OutSyllable) :-
     key_effect(Key, add_tone(Tone)),
