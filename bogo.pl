@@ -254,7 +254,7 @@ not_strictly_terminal_vowel(uye, mod_hat_e, (uyê, uyề, uyế, uyể, uyễ, u
 not_strictly_terminal_vowel(ye, mod_hat_e, (yê, yề, yế, yể, yễ, yệ)).
 
 % The incomplete forms happen as transitional states before the final word. For example, if you type huyenf then you get
-% huyèn, an arguable invalid VNmese word, but if you type 'e' after that, you get huyền, a valid word.
+% huyèn, an arguably invalid VNmese word, but if you type 'e' after that, you get huyền, a valid word.
 % We don't do anything with the incomplete forms yet but it's a good distintion to make, at least at the mental level.
 not_strictly_terminal_vowel(A, B, C) :- not_strictly_terminal_vowel_incomplete(A, B, C).
 
