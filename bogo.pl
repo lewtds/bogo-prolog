@@ -1,6 +1,6 @@
 :- set_prolog_flag(encoding, utf8).
 
-% Needs SWI-Prolog version 8.1.13 for with_tty_raw
+% Needs SWI-Prolog version >= 8.1.13 for with_tty_raw
 %
 % Usage example:
 % ?- consult('bogo.prolog').
@@ -22,6 +22,8 @@
 % [h,o,p,w],hơp
 % [h,o,p,w,j],hợp
 interactive :- with_tty_raw(loop_process_key([])).
+
+:- set_flag(bogo:dau_moi, true).
 
 % food for thought:
 % gìn giữ
@@ -61,8 +63,8 @@ key_effect(w, add_vowel_mod(mod_breve_a)).
 key_effect(d, add_consonant_mod(mod_dash_d)).
 
 % VNI
-key_effect('2', add_tone(tone_huyen)).
 key_effect('1', add_tone(tone_sac)).
+key_effect('2', add_tone(tone_huyen)).
 key_effect('3', add_tone(tone_hoi)).
 key_effect('4', add_tone(tone_nga)).
 key_effect('5', add_tone(tone_nang)).
@@ -106,16 +108,13 @@ process_key(CurrentString, Key, OutString) :-
     once(phrase(syllable(I, V, F), CurrentString)),
 
     apply_key_effect(s(I, V, F), Key, s(I2, V2, F2)),
-    shortcut_rule(I2, V2, F2, I3, V3, F3),
+    rebalance_incomplete_form(s(I2, V2, F2), s(I3, V3, F3)),
 
     atomic_list_concat([I3, V3, F3], OutputAtom),
     atom_chars(OutputAtom, OutString),
 
     % require that the output must be parsable, this is to weed out non-Vietnamese words like vowel -> vơel
     once(phrase(syllable(_, _, _), OutString)).
-
-shortcut_rule(I, ưo, F, I, ươ, F).
-shortcut_rule(I, V, F, I, V, F).
 
 apply_key_effect(InSyllable, Key, OutSyllable) :-
     key_effect(Key, add_tone(Tone)),
@@ -130,17 +129,22 @@ apply_key_effect(InSyllable, Key, OutSyllable) :-
     syllable_consonant_mod(InSyllable, Mod, OutSyllable).
 
 % If none of the transformation rules apply, append the key to the end of the syllable
+apply_key_effect(s(I, V, ''), Key, s(I, V2, '')) :- vowel_char(Key, [Key], []), atom_concat(V, Key, V2).
 apply_key_effect(s(I, '', ''), Key, s(I2, '', '')) :- atom_concat(I, Key, I2).
-apply_key_effect(s(I, V, ''), Key, s(I, V2, '')) :- atom_concat(V, Key, V2).
 apply_key_effect(s(I, V, F), Key, s(I, V, F2)) :- atom_concat(F, Key, F2).
 
 syllable_vowel_mod(s(I, V, F), Mod, s(I, V_out, F)) :-
-    vowel_nucleus_mod_tone(V, V_raw, _, Tone),
-    vowel_nucleus_mod_tone(V_out, V_raw, Mod, Tone).
+    vowel_nucleus_mod_tone(s(I, V, F), s(I, V_raw, F), _, Tone),
+    vowel_nucleus_mod_tone(s(I, V_out, F), s(I, V_raw, F), Mod, Tone).
 
 syllable_tone(s(I, V, F), Tone, s(I, V_out, F)) :-
-    vowel_nucleus_mod_tone(V, V_raw, Mod, _),
-    vowel_nucleus_mod_tone(V_out, V_raw, Mod, Tone).
+    vowel_nucleus_mod_tone(s(I, V, F), s(I, V_raw, F), Mod, _),
+    vowel_nucleus_mod_tone(s(I, V_out, F), s(I, V_raw, F), Mod, Tone).
+
+% Eg: to turn thuơng into thương, mịen to miẹn
+rebalance_incomplete_form(s(I, V, F), s(I, V_out, F)) :-
+    vowel_nucleus_mod_tone(s(I, V, F), s(I, V_raw, F), Mod, Tone),
+    vowel_nucleus_mod_tone(s(I, V_out, F), s(I, V_raw, F), Mod, Tone).
 
 % there is the only case of d -> đ here so it's hard-coded
 syllable_consonant_mod(s(d, V, F), _, s(đ, V, F)).
@@ -184,7 +188,6 @@ consonant_initial(s) --> [s].
 consonant_initial(x) --> [x].
 consonant_initial(h) --> [h].
 consonant_initial(d) --> [d].
-% TODO gìn doesn't work
 consonant_initial(gi), [V] --> [g, i], vowel(V).
 consonant_initial(g) --> [g].
 consonant_initial(gh) --> [g, h].
@@ -206,336 +209,90 @@ consonant_final(t) --> [t].
 consonant_final(n) --> [n].
 consonant_final(m) --> [m].
 
+% vowel nucleus transformation table schema:
+%   resulting syllable, base syllable, vowel mod, tone, allow incomplete
+vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_ngang) :- terminal_vowel(Raw, Mod, (Result, _, _, _, _, _)).
+vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_huyen) :- terminal_vowel(Raw, Mod, (_, Result, _, _, _, _)).
+vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_sac)   :- terminal_vowel(Raw, Mod, (_, _, Result, _, _, _)).
+vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_hoi)   :- terminal_vowel(Raw, Mod, (_, _, _, Result, _, _)).
+vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_nga)   :- terminal_vowel(Raw, Mod, (_, _, _, _, Result, _)).
+vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_nang)  :- terminal_vowel(Raw, Mod, (_, _, _, _, _, Result)).
 
-% vowel nucleus transformation database schema:
-%   resulting vowel, base characters, vowel modification, tone
-%
-% FIXME: these facts are highly redundant/compressible. What would be a good representation?
-vowel_nucleus_mod_tone(a, a, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(à, a, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(á, a, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ả, a, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ã, a, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ạ, a, mod_none, tone_nang).
+vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_ngang) :- not_strictly_terminal_vowel(Raw, Mod, (Result, _, _, _, _, _)).
+vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_huyen) :- not_strictly_terminal_vowel(Raw, Mod, (_, Result, _, _, _, _)).
+vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_sac)   :- not_strictly_terminal_vowel(Raw, Mod, (_, _, Result, _, _, _)).
+vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_hoi)   :- not_strictly_terminal_vowel(Raw, Mod, (_, _, _, Result, _, _)).
+vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_nga)   :- not_strictly_terminal_vowel(Raw, Mod, (_, _, _, _, Result, _)).
+vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_nang)  :- not_strictly_terminal_vowel(Raw, Mod, (_, _, _, _, _, Result)).
 
-vowel_nucleus_mod_tone(â, a, mod_hat_a, tone_ngang).
-vowel_nucleus_mod_tone(ầ, a, mod_hat_a, tone_huyen).
-vowel_nucleus_mod_tone(ấ, a, mod_hat_a, tone_sac).
-vowel_nucleus_mod_tone(ẩ, a, mod_hat_a, tone_hoi).
-vowel_nucleus_mod_tone(ẫ, a, mod_hat_a, tone_nga).
-vowel_nucleus_mod_tone(ậ, a, mod_hat_a, tone_nang).
+vowel_nucleus_mod_tone(s(I, V, F), s(I, V, F), mod_none, tone_ngang).
 
-vowel_nucleus_mod_tone(ă, a, mod_breve_a, tone_ngang).
-vowel_nucleus_mod_tone(ằ, a, mod_breve_a, tone_huyen).
-vowel_nucleus_mod_tone(ắ, a, mod_breve_a, tone_sac).
-vowel_nucleus_mod_tone(ẳ, a, mod_breve_a, tone_hoi).
-vowel_nucleus_mod_tone(ẵ, a, mod_breve_a, tone_nga).
-vowel_nucleus_mod_tone(ặ, a, mod_breve_a, tone_nang).
+not_strictly_terminal_vowel(a, mod_breve_a, (ă, ằ, ắ, ẳ, ẵ, ặ)).
+not_strictly_terminal_vowel(a, mod_hat_a, (â, ầ, ấ, ẩ, ẫ, ậ)).
+not_strictly_terminal_vowel(a, mod_none, (a, à, á, ả, ã, ạ)).
+not_strictly_terminal_vowel(e, mod_hat_e, (ê, ề, ế, ể, ễ, ệ)).
+not_strictly_terminal_vowel(e, mod_none, (e, è, é, ẻ, ẽ, ẹ)).
+not_strictly_terminal_vowel(i, mod_none, (i, ì, í, ỉ, ĩ, ị)).
+not_strictly_terminal_vowel(ie, mod_hat_e, (iê, iề, iế, iể, iễ, iệ)).
+not_strictly_terminal_vowel(o, mod_hat_o, (ô, ồ, ố, ổ, ỗ, ộ)).
+not_strictly_terminal_vowel(o, mod_horn_o, (ơ, ờ, ớ, ở, ỡ, ợ)).
+not_strictly_terminal_vowel(o, mod_none, (o, ò, ó, ỏ, õ, ọ)).
+not_strictly_terminal_vowel(oa, mod_breve_a, (oă, oằ, oắ, oẳ, oẵ, oặ)).
+not_strictly_terminal_vowel(oa, mod_none, (oa, oà, oá, oả, oã, oạ)).
+not_strictly_terminal_vowel(u, mod_horn_u, (ư, ừ, ứ, ử, ữ, ự)).
+not_strictly_terminal_vowel(u, mod_none, (u, ù, ú, ủ, ũ, ụ)).
+not_strictly_terminal_vowel(ue, mod_hat_e, (uê, uề, uế, uể, uễ, uệ)).
+not_strictly_terminal_vowel(ua, mod_hat_a, (uâ, uầ, uấ, uẩ, uẫ, uậ)).
+not_strictly_terminal_vowel(uo, mod_hat_o, (uô, uồ, uố, uổ, uỗ, uộ)).
+not_strictly_terminal_vowel(uo, mod_horn_uo, (ươ, ườ, ướ, ưở, ưỡ, ượ)).
+not_strictly_terminal_vowel(uo, mod_horn_uo, (uơ, uờ, uớ, uở, uỡ, uợ)).
+not_strictly_terminal_vowel(uye, mod_hat_e, (uyê, uyề, uyế, uyể, uyễ, uyệ)).
 
-vowel_nucleus_mod_tone(e, e, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(è, e, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(é, e, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ẻ, e, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ẽ, e, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ẹ, e, mod_none, tone_nang).
+% The incomplete forms happen as transitional states before the final word. For example, if you type huyenf then you get
+% huyèn, an arguable invalid VNmese word, but if you type 'e' after that, you get huyền, a valid word.
+% We don't do anything with the incomplete forms yet but it's a good distintion to make, at least at the mental level.
+not_strictly_terminal_vowel(A, B, C) :- not_strictly_terminal_vowel_incomplete(A, B, C).
 
-vowel_nucleus_mod_tone(ê, e, mod_hat_e, tone_ngang).
-vowel_nucleus_mod_tone(ề, e, mod_hat_e, tone_huyen).
-vowel_nucleus_mod_tone(ế, e, mod_hat_e, tone_sac).
-vowel_nucleus_mod_tone(ể, e, mod_hat_e, tone_hoi).
-vowel_nucleus_mod_tone(ễ, e, mod_hat_e, tone_nga).
-vowel_nucleus_mod_tone(ệ, e, mod_hat_e, tone_nang).
+not_strictly_terminal_vowel_incomplete(uo, mod_none, (uo, uò, uó, uỏ, uõ, uọ)).
+not_strictly_terminal_vowel_incomplete(uo, mod_horn_uo, (ưo, ừo, ứo, ửo, ữo, ựo)).
+not_strictly_terminal_vowel_incomplete(uo, mod_horn_uo, (ưo, ưò, ưó, ưỏ, ưõ, ưọ)).
+not_strictly_terminal_vowel_incomplete(uye, mod_none, (uye, uyè, uyé, uyẻ, uyẽ, uyẹ)).
+not_strictly_terminal_vowel_incomplete(ie, mod_none, (ie, iè, ié, iẻ, iẽ, iẹ)).
+not_strictly_terminal_vowel_incomplete(ie, mod_none, (ie, ìe, íe, ỉe, ĩe, ịe)).
+not_strictly_terminal_vowel_incomplete(ue, mod_none, (ue, uè, ué, uẻ, uẽ, uẹ)).
 
-vowel_nucleus_mod_tone(i, i, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ì, i, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(í, i, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ỉ, i, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ĩ, i, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ị, i, mod_none, tone_nang).
+terminal_vowel(ai, mod_none, (ai, ài, ái, ải, ãi, ại)).
+terminal_vowel(ao, mod_none, (ao, ào, áo, ảo, ão, ạo)).
+terminal_vowel(au, mod_hat_a, (âu, ầu, ấu, ẩu, ẫu, ậu)).
+terminal_vowel(au, mod_none, (au, àu, áu, ảu, ãu, ạu)).
+terminal_vowel(ay, mod_hat_a, (ây, ầy, ấy, ẩy, ẫy, ậy)).
+terminal_vowel(ay, mod_none, (ay, ày, áy, ảy, ãy, ạy)).
+terminal_vowel(eo, mod_none, (eo, èo, éo, ẻo, ẽo, ẹo)).
+terminal_vowel(eu, mod_hat_e, (êu, ều, ếu, ểu, ễu, ệu)).
+terminal_vowel(ia, mod_none, (ia, ìa, ía, ỉa, ĩa, ịa)).
+terminal_vowel(ie, mod_none, (ie, ìe, íe, ỉe, ĩe, ịe)).
+terminal_vowel(ieu, mod_hat_e, (iêu, iều, iếu, iểu, iễu, iệu)).
+terminal_vowel(iu, mod_none, (iu, ìu, íu, ỉu, ĩu, ịu)).
+terminal_vowel(oa, mod_none, (oa, oà, oá, oả, oã, oạ)) :- get_flag(bogo:dau_moi, true).
+terminal_vowel(oa, mod_none, (oa, òa, óa, ỏa, õa, ọa)).
+terminal_vowel(oe, mod_none, (oe, oè, oé, oẻ, oẽ, oẹ)) :- get_flag(bogo:dau_moi, true).
+terminal_vowel(oe, mod_none, (oe, òe, óe, ỏe, õe, ọe)).
+terminal_vowel(oi, mod_none, (oi, òi, ói, ỏi, õi, ọi)).
+terminal_vowel(ua, mod_none, (ua, ùa, úa, ủa, ũa, ụa)).
+terminal_vowel(ui, mod_horn_u, (ưi, ừi, ứi, ửi, ữi, ựi)).
+terminal_vowel(ui, mod_none, (ui, ùi, úi, ủi, ũi, ụi)).
+terminal_vowel(uo, mod_horn_uo, (uơ, uờ, uớ, uở, uỡ, uợ)).
+terminal_vowel(uoi, mod_hat_o, (uôi, uồi, uối, uổi, uỗi, uội)).
+terminal_vowel(uoi, mod_horn_uo, (ươi, ười, ưới, ưởi, ưỡi, ượi)).
+terminal_vowel(uou, mod_horn_uo, (ươu, ườu, ướu, ưởu, ưỡu, ượu)).
+terminal_vowel(uu, mod_horn_u, (ưu, ừu, ứu, ửu, ữu, ựu)).
+terminal_vowel(uy, mod_none, (uy, uỳ, uý, uỷ, uỹ, uỵ)) :- get_flag(bogo:dau_moi, true).
+terminal_vowel(uy, mod_none, (uy, ùy, úy, ủy, ũy, ụy)).
+terminal_vowel(y, mod_none, (y, ỳ, ý, ỷ, ỹ, ỵ)).
+terminal_vowel(ya, mod_none, (ya, ỳa, ýa, ỷa, ỹa, ỵa)).
 
-vowel_nucleus_mod_tone(o, o, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ò, o, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(ó, o, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ỏ, o, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(õ, o, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ọ, o, mod_none, tone_nang).
+terminal_vowel(A, B, C) :- terminal_vowel_incomplete(A, B, C).
 
-vowel_nucleus_mod_tone(ô, o, mod_hat_o, tone_ngang).
-vowel_nucleus_mod_tone(ồ, o, mod_hat_o, tone_huyen).
-vowel_nucleus_mod_tone(ố, o, mod_hat_o, tone_sac).
-vowel_nucleus_mod_tone(ổ, o, mod_hat_o, tone_hoi).
-vowel_nucleus_mod_tone(ỗ, o, mod_hat_o, tone_nga).
-vowel_nucleus_mod_tone(ộ, o, mod_hat_o, tone_nang).
-
-vowel_nucleus_mod_tone(ơ, o, mod_horn_o, tone_ngang).
-vowel_nucleus_mod_tone(ờ, o, mod_horn_o, tone_huyen).
-vowel_nucleus_mod_tone(ớ, o, mod_horn_o, tone_sac).
-vowel_nucleus_mod_tone(ở, o, mod_horn_o, tone_hoi).
-vowel_nucleus_mod_tone(ỡ, o, mod_horn_o, tone_nga).
-vowel_nucleus_mod_tone(ợ, o, mod_horn_o, tone_nang).
-
-vowel_nucleus_mod_tone(u, u, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ù, u, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(ú, u, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ủ, u, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ũ, u, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ụ, u, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(ư, u, mod_horn_u, tone_ngang).
-vowel_nucleus_mod_tone(ừ, u, mod_horn_u, tone_huyen).
-vowel_nucleus_mod_tone(ứ, u, mod_horn_u, tone_sac).
-vowel_nucleus_mod_tone(ử, u, mod_horn_u, tone_hoi).
-vowel_nucleus_mod_tone(ữ, u, mod_horn_u, tone_nga).
-vowel_nucleus_mod_tone(ự, u, mod_horn_u, tone_nang).
-
-vowel_nucleus_mod_tone(y, y, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ỳ, y, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(ý, y, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ỷ, y, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ỹ, y, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ỵ, y, mod_none, tone_nang).
-
-% just to support giặt gỵa
-vowel_nucleus_mod_tone(ya, ya, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ỳa, ya, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(ýa, ya, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ỷa, ya, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ỹa, ya, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ỵa, ya, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(ai, ai, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ài, ai, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(ái, ai, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ải, ai, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ãi, ai, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ại, ai, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(ao, ao, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ào, ao, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(áo, ao, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ảo, ao, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ão, ao, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ạo, ao, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(au, au, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(àu, au, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(áu, au, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ảu, au, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ãu, au, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ạu, au, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(ay, ay, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ày, ay, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(áy, ay, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ảy, ay, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ãy, ay, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ạy, ay, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(eo, eo, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(èo, eo, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(éo, eo, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ẻo, eo, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ẽo, eo, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ẹo, eo, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(ia, ia, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ìa, ia, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(ía, ia, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ỉa, ia, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ĩa, ia, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ịa, ia, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(iu, iu, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ìu, iu, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(íu, iu, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ỉu, iu, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ĩu, iu, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ịu, iu, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(ie, ie, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(iè, ie, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(ié, ie, mod_none, tone_sac).
-vowel_nucleus_mod_tone(iẻ, ie, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(iẽ, ie, mod_none, tone_nga).
-vowel_nucleus_mod_tone(iẹ, ie, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(iê, ie, mod_hat_e, tone_ngang).
-vowel_nucleus_mod_tone(iề, ie, mod_hat_e, tone_huyen).
-vowel_nucleus_mod_tone(iế, ie, mod_hat_e, tone_sac).
-vowel_nucleus_mod_tone(iể, ie, mod_hat_e, tone_hoi).
-vowel_nucleus_mod_tone(iễ, ie, mod_hat_e, tone_nga).
-vowel_nucleus_mod_tone(iệ, ie, mod_hat_e, tone_nang).
-
-vowel_nucleus_mod_tone(iêu, ieu, mod_hat_e, tone_ngang).
-vowel_nucleus_mod_tone(iều, ieu, mod_hat_e, tone_huyen).
-vowel_nucleus_mod_tone(iếu, ieu, mod_hat_e, tone_sac).
-vowel_nucleus_mod_tone(iểu, ieu, mod_hat_e, tone_hoi).
-vowel_nucleus_mod_tone(iễu, ieu, mod_hat_e, tone_nga).
-vowel_nucleus_mod_tone(iệu, ieu, mod_hat_e, tone_nang).
-
-% TODO how to support hòa but hoán? It's some kind of context sensitive grammar situation here.
-% should we include the consonant parts into the rules?
-vowel_nucleus_mod_tone(oa, oa, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(oà, oa, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(oá, oa, mod_none, tone_sac).
-vowel_nucleus_mod_tone(oả, oa, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(oã, oa, mod_none, tone_nga).
-vowel_nucleus_mod_tone(oạ, oa, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(oă, oa, mod_breve_a, tone_ngang).
-vowel_nucleus_mod_tone(oằ, oa, mod_breve_a, tone_huyen).
-vowel_nucleus_mod_tone(oắ, oa, mod_breve_a, tone_sac).
-vowel_nucleus_mod_tone(oẳ, oa, mod_breve_a, tone_hoi).
-vowel_nucleus_mod_tone(oẵ, oa, mod_breve_a, tone_nga).
-vowel_nucleus_mod_tone(oặ, oa, mod_breve_a, tone_nang).
-
-vowel_nucleus_mod_tone(oe, oe, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(oè, oe, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(oé, oe, mod_none, tone_sac).
-vowel_nucleus_mod_tone(oẻ, oe, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(oẽ, oe, mod_none, tone_nga).
-vowel_nucleus_mod_tone(oẹ, oe, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(oi, oi, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(òi, oi, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(ói, oi, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ỏi, oi, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(õi, oi, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ọi, oi, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(ua, ua, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ùa, ua, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(úa, ua, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ủa, ua, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ũa, ua, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ụa, ua, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(uâ, ua, mod_hat_a, tone_ngang).
-vowel_nucleus_mod_tone(uầ, ua, mod_hat_a, tone_huyen).
-vowel_nucleus_mod_tone(uấ, ua, mod_hat_a, tone_sac).
-vowel_nucleus_mod_tone(uẩ, ua, mod_hat_a, tone_hoi).
-vowel_nucleus_mod_tone(uẫ, ua, mod_hat_a, tone_nga).
-vowel_nucleus_mod_tone(uậ, ua, mod_hat_a, tone_nang).
-
-vowel_nucleus_mod_tone(ui, ui, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(ùi, ui, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(úi, ui, mod_none, tone_sac).
-vowel_nucleus_mod_tone(ủi, ui, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(ũi, ui, mod_none, tone_nga).
-vowel_nucleus_mod_tone(ụi, ui, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(uyê, uye, mod_hat_e, tone_ngang).
-vowel_nucleus_mod_tone(uyề, uye, mod_hat_e, tone_huyen).
-vowel_nucleus_mod_tone(uyế, uye, mod_hat_e, tone_sac).
-vowel_nucleus_mod_tone(uyể, uye, mod_hat_e, tone_hoi).
-vowel_nucleus_mod_tone(uyễ, uye, mod_hat_e, tone_nga).
-vowel_nucleus_mod_tone(uyệ, uye, mod_hat_e, tone_nang).
-
-vowel_nucleus_mod_tone(uô, uo, mod_hat_o, tone_ngang).
-vowel_nucleus_mod_tone(uồ, uo, mod_hat_o, tone_huyen).
-vowel_nucleus_mod_tone(uố, uo, mod_hat_o, tone_sac).
-vowel_nucleus_mod_tone(uổ, uo, mod_hat_o, tone_hoi).
-vowel_nucleus_mod_tone(uỗ, uo, mod_hat_o, tone_nga).
-vowel_nucleus_mod_tone(uộ, uo, mod_hat_o, tone_nang).
-
-vowel_nucleus_mod_tone(uôi, uoi, mod_hat_o, tone_ngang).
-vowel_nucleus_mod_tone(uồi, uoi, mod_hat_o, tone_huyen).
-vowel_nucleus_mod_tone(uối, uoi, mod_hat_o, tone_sac).
-vowel_nucleus_mod_tone(uổi, uoi, mod_hat_o, tone_hoi).
-vowel_nucleus_mod_tone(uỗi, uoi, mod_hat_o, tone_nga).
-vowel_nucleus_mod_tone(uội, uoi, mod_hat_o, tone_nang).
-
-vowel_nucleus_mod_tone(uy, uy, mod_none, tone_ngang).
-vowel_nucleus_mod_tone(uỳ, uy, mod_none, tone_huyen).
-vowel_nucleus_mod_tone(uý, uy, mod_none, tone_sac).
-vowel_nucleus_mod_tone(uỷ, uy, mod_none, tone_hoi).
-vowel_nucleus_mod_tone(uỹ, uy, mod_none, tone_nga).
-vowel_nucleus_mod_tone(uỵ, uy, mod_none, tone_nang).
-
-vowel_nucleus_mod_tone(âu, au, mod_hat_a, tone_ngang).
-vowel_nucleus_mod_tone(ầu, au, mod_hat_a, tone_huyen).
-vowel_nucleus_mod_tone(ấu, au, mod_hat_a, tone_sac).
-vowel_nucleus_mod_tone(ẩu, au, mod_hat_a, tone_hoi).
-vowel_nucleus_mod_tone(ẫu, au, mod_hat_a, tone_nga).
-vowel_nucleus_mod_tone(ậu, au, mod_hat_a, tone_nang).
-
-vowel_nucleus_mod_tone(ây, ay, mod_hat_a, tone_ngang).
-vowel_nucleus_mod_tone(ầy, ay, mod_hat_a, tone_huyen).
-vowel_nucleus_mod_tone(ấy, ay, mod_hat_a, tone_sac).
-vowel_nucleus_mod_tone(ẩy, ay, mod_hat_a, tone_hoi).
-vowel_nucleus_mod_tone(ẫy, ay, mod_hat_a, tone_nga).
-vowel_nucleus_mod_tone(ậy, ay, mod_hat_a, tone_nang).
-
-vowel_nucleus_mod_tone(êu, eu, mod_hat_e, tone_ngang).
-vowel_nucleus_mod_tone(ều, eu, mod_hat_e, tone_huyen).
-vowel_nucleus_mod_tone(ếu, eu, mod_hat_e, tone_sac).
-vowel_nucleus_mod_tone(ểu, eu, mod_hat_e, tone_hoi).
-vowel_nucleus_mod_tone(ễu, eu, mod_hat_e, tone_nga).
-vowel_nucleus_mod_tone(ệu, eu, mod_hat_e, tone_nang).
-
-vowel_nucleus_mod_tone(ôi, oi, mod_hat_o, tone_ngang).
-vowel_nucleus_mod_tone(ồi, oi, mod_hat_o, tone_huyen).
-vowel_nucleus_mod_tone(ối, oi, mod_hat_o, tone_sac).
-vowel_nucleus_mod_tone(ổi, oi, mod_hat_o, tone_hoi).
-vowel_nucleus_mod_tone(ỗi, oi, mod_hat_o, tone_nga).
-vowel_nucleus_mod_tone(ội, oi, mod_hat_o, tone_nang).
-
-vowel_nucleus_mod_tone(ưa, ua, mod_horn_u, tone_ngang).
-vowel_nucleus_mod_tone(ừa, ua, mod_horn_u, tone_huyen).
-vowel_nucleus_mod_tone(ứa, ua, mod_horn_u, tone_sac).
-vowel_nucleus_mod_tone(ửa, ua, mod_horn_u, tone_hoi).
-vowel_nucleus_mod_tone(ữa, ua, mod_horn_u, tone_nga).
-vowel_nucleus_mod_tone(ựa, ua, mod_horn_u, tone_nang).
-
-vowel_nucleus_mod_tone(ơi, oi, mod_horn_o, tone_ngang).
-vowel_nucleus_mod_tone(ời, oi, mod_horn_o, tone_huyen).
-vowel_nucleus_mod_tone(ới, oi, mod_horn_o, tone_sac).
-vowel_nucleus_mod_tone(ởi, oi, mod_horn_o, tone_hoi).
-vowel_nucleus_mod_tone(ỡi, oi, mod_horn_o, tone_nga).
-vowel_nucleus_mod_tone(ợi, oi, mod_horn_o, tone_nang).
-
-vowel_nucleus_mod_tone(ưi, ui, mod_horn_u, tone_ngang).
-vowel_nucleus_mod_tone(ừi, ui, mod_horn_u, tone_huyen).
-vowel_nucleus_mod_tone(ứi, ui, mod_horn_u, tone_sac).
-vowel_nucleus_mod_tone(ửi, ui, mod_horn_u, tone_hoi).
-vowel_nucleus_mod_tone(ữi, ui, mod_horn_u, tone_nga).
-vowel_nucleus_mod_tone(ựi, ui, mod_horn_u, tone_nang).
-
-vowel_nucleus_mod_tone(ưu, uu, mod_horn_u, tone_ngang).
-vowel_nucleus_mod_tone(ừu, uu, mod_horn_u, tone_huyen).
-vowel_nucleus_mod_tone(ứu, uu, mod_horn_u, tone_sac).
-vowel_nucleus_mod_tone(ửu, uu, mod_horn_u, tone_hoi).
-vowel_nucleus_mod_tone(ữu, uu, mod_horn_u, tone_nga).
-vowel_nucleus_mod_tone(ựu, uu, mod_horn_u, tone_nang).
-
-vowel_nucleus_mod_tone(ươ, uo, mod_horn_uo, tone_ngang).
-vowel_nucleus_mod_tone(ườ, uo, mod_horn_uo, tone_huyen).
-vowel_nucleus_mod_tone(ướ, uo, mod_horn_uo, tone_sac).
-vowel_nucleus_mod_tone(ưở, uo, mod_horn_uo, tone_hoi).
-vowel_nucleus_mod_tone(ưỡ, uo, mod_horn_uo, tone_nga).
-vowel_nucleus_mod_tone(ượ, uo, mod_horn_uo, tone_nang).
-
-vowel_nucleus_mod_tone(ươi, uoi, mod_horn_uo, tone_ngang).
-vowel_nucleus_mod_tone(ười, uoi, mod_horn_uo, tone_huyen).
-vowel_nucleus_mod_tone(ưới, uoi, mod_horn_uo, tone_sac).
-vowel_nucleus_mod_tone(ưởi, uoi, mod_horn_uo, tone_hoi).
-vowel_nucleus_mod_tone(ưỡi, uoi, mod_horn_uo, tone_nga).
-vowel_nucleus_mod_tone(ượi, uoi, mod_horn_uo, tone_nang).
-
-vowel_nucleus_mod_tone(ươu, uou, mod_horn_uo, tone_ngang).
-vowel_nucleus_mod_tone(ườu, uou, mod_horn_uo, tone_huyen).
-vowel_nucleus_mod_tone(ướu, uou, mod_horn_uo, tone_sac).
-vowel_nucleus_mod_tone(ưởu, uou, mod_horn_uo, tone_hoi).
-vowel_nucleus_mod_tone(ưỡu, uou, mod_horn_uo, tone_nga).
-vowel_nucleus_mod_tone(ượu, uou, mod_horn_uo, tone_nang).
-
-vowel_nucleus_mod_tone(V, V, mod_none, tone_ngang).
-
-% x(Result, Raw, Mod, tone_ngang) :- duh(Raw, Mod, (Result, _, _, _, _, _)).
-% x(Result, Raw, Mod, tone_huyen) :- duh(Raw, Mod, (_, Result, _, _, _, _)).
-% x(Result, Raw, Mod, tone_sac)   :- duh(Raw, Mod, (_, _, Result, _, _, _)).
-% x(Result, Raw, Mod, tone_hoi)   :- duh(Raw, Mod, (_, _, _, Result, _, _)).
-% x(Result, Raw, Mod, tone_nga)   :- duh(Raw, Mod, (_, _, _, _, Result, _)).
-% x(Result, Raw, Mod, tone_nang)  :- duh(Raw, Mod, (_, _, _, _, _, Result)).
-
-% duh(a, mod_hat_a, (â, ầ, ấ, ẩ, ẫ, ậ)).
+terminal_vowel_incomplete(uoi, mod_none, (uoi, uòi, uói, uỏi, uõi, uọi)).
+terminal_vowel_incomplete(uoi, mod_none, (uoi, uòi, uói, uỏi, uõi, uọi)).
+terminal_vowel_incomplete(uou, mod_none, (uou, uòu, uóu, uỏu, uõu, uọu)).
