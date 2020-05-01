@@ -248,7 +248,10 @@ not_strictly_terminal_vowel(ua, mod_hat_a, (uâ, uầ, uấ, uẩ, uẫ, uậ)).
 not_strictly_terminal_vowel(uo, mod_hat_o, (uô, uồ, uố, uổ, uỗ, uộ)).
 not_strictly_terminal_vowel(uo, mod_horn_uo, (ươ, ườ, ướ, ưở, ưỡ, ượ)).
 not_strictly_terminal_vowel(uo, mod_horn_uo, (uơ, uờ, uớ, uở, uỡ, uợ)).
+% huyền, thuyền
 not_strictly_terminal_vowel(uye, mod_hat_e, (uyê, uyề, uyế, uyể, uyễ, uyệ)).
+% quyền and yến
+not_strictly_terminal_vowel(ye, mod_hat_e, (yê, yề, yế, yể, yễ, yệ)).
 
 % The incomplete forms happen as transitional states before the final word. For example, if you type huyenf then you get
 % huyèn, an arguable invalid VNmese word, but if you type 'e' after that, you get huyền, a valid word.
@@ -297,4 +300,5 @@ terminal_vowel(A, B, C) :- terminal_vowel_incomplete(A, B, C).
 
 terminal_vowel_incomplete(uoi, mod_none, (uoi, uòi, uói, uỏi, uõi, uọi)).
 terminal_vowel_incomplete(uoi, mod_none, (uoi, uòi, uói, uỏi, uõi, uọi)).
+terminal_vowel_incomplete(uoi, mod_horn_uo, (uơi, uời, uới, uởi, uỡi, uợi)).
 terminal_vowel_incomplete(uou, mod_none, (uou, uòu, uóu, uỏu, uõu, uọu)).
