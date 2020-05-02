@@ -180,7 +180,7 @@ consonant_initial(ch) --> [c, h].
 consonant_initial(c) --> [c].
 consonant_initial(k) --> [k].
 consonant_initial(qu) --> [q, u].
-consonant_initial(q) --> [q]. % I'm a bit iffy on this case
+consonant_initial(q) --> [q]. % I'm a bit iffy on this case since it allows typing teencode-looking words like qán, qẩn
 consonant_initial(ph) --> [p, h].
 consonant_initial(th) --> [t, h].
 consonant_initial(kh) --> [k, h].
@@ -190,7 +190,9 @@ consonant_initial(s) --> [s].
 consonant_initial(x) --> [x].
 consonant_initial(h) --> [h].
 consonant_initial(d) --> [d].
+% già
 consonant_initial(gi), [V] --> [g, i], vowel(V).
+% gì, gà
 consonant_initial(g) --> [g].
 consonant_initial(gh) --> [g, h].
 consonant_initial(v) --> [v].
@@ -229,6 +231,8 @@ vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_nang)  :- not_st
 
 vowel_nucleus_mod_tone(s(I, V, F), s(I, V, F), mod_none, tone_ngang).
 
+% not_strictly_terminal_vowel means the vowel can be both terminal and non-terminal.
+% Would it be useful to also distinguish strictly non-terminal vowels?
 not_strictly_terminal_vowel(a, mod_breve_a, (ă, ằ, ắ, ẳ, ẵ, ặ)).
 not_strictly_terminal_vowel(a, mod_hat_a, (â, ầ, ấ, ẩ, ẫ, ậ)).
 not_strictly_terminal_vowel(a, mod_none, (a, à, á, ả, ã, ạ)).
