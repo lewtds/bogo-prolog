@@ -1,3 +1,10 @@
+:- include('test_cases.prolog').
+
+:- initialization(init).
+
+init :-
+    g_assign(bogo_dau_moi, true).
+
 % GNU Prolog doesn't support Unicode so we're just doing calculation directly on streams of UTF-8
 % char codes here. Note that the letters do not have same byte lengths. For example, "a" takes 1 byte
 % but "ả" takes 3. The double quote syntax stores a string as a list of bytes.
@@ -158,13 +165,13 @@ process_key_sequence(Sequence, Output) :-
     process_key_sequence(Sequence, "", Output).
 
 process_key_sequence([Key|Rest], CurrentString, Output) :-
-    process_key(CurrentString, [Key], Output1),
+    once(process_key(CurrentString, [Key], Output1)),
     process_key_sequence(Rest, Output1, Output).
 
 process_key_sequence([], CurrentString, CurrentString).
 
 % fall back to the raw sequence if processing fails (vowel -> vơel)
-process_key_sequence(Keys, [], Keys).
+process_key_sequence(Keys, "", Keys).
 
 
 % Try applying the effect of the key, assuming that there is one.
@@ -209,6 +216,11 @@ apply_key_effect(InSyllable, Key, OutSyllable) :-
     key_effect(Key, add_consonant_mod(Mod)),
     syllable_consonant_mod(InSyllable, Mod, OutSyllable), !.
 
+% If none of the transformation rules apply, append the key to the end of the syllable
+apply_key_effect(s(I, V, ""), Key, s(I, V2, "")) :- vowel_char(Key, [Key], []), append(V, Key, V2).
+apply_key_effect(s(I, "", ""), Key, s(I2, "", "")) :- append(I, Key, I2).
+apply_key_effect(s(I, V, F), Key, s(I, V, F2)) :- append(F, Key, F2).
+
 syllable_vowel_mod(s(I, V, F), Mod, s(I, V_out, F)) :-
     vowel_nucleus_mod_tone(s(I, V, F), s(I, V_raw, F), _, Tone),
     vowel_nucleus_mod_tone(s(I, V_out, F), s(I, V_raw, F), Mod, Tone).
@@ -217,7 +229,7 @@ syllable_tone(s(I, V, F), Tone, s(I, V_out, F)) :-
     vowel_nucleus_mod_tone(s(I, V, F), s(I, V_raw, F), Mod, _),
     vowel_nucleus_mod_tone(s(I, V_out, F), s(I, V_raw, F), Mod, Tone).
 
-% Eg: to turn thuơng into thương, mịen to miẹn
+% Eg: to turn thuơng into thương, mịen to miẹn, khúay to khuáy
 rebalance_incomplete_form(s(I, V, F), s(I, V_out, F)) :-
     vowel_nucleus_mod_tone(s(I, V, F), s(I, V_raw, F), Mod, Tone),
     vowel_nucleus_mod_tone(s(I, V_out, F), s(I, V_raw, F), Mod, Tone).
@@ -323,9 +335,10 @@ not_strictly_terminal_vowel("uo", mod_hat_o, ("uô", "uồ", "uố", "uổ", "u�
 not_strictly_terminal_vowel("uo", mod_horn_uo, ("ươ", "ườ", "ướ", "ưở", "ưỡ", "ượ")).
 not_strictly_terminal_vowel("uo", mod_horn_uo, ("uơ", "uờ", "uớ", "uở", "uỡ", "uợ")).
 % huyền, thuyền
-not_strictly_terminal_vowel(uye, mod_hat_e, ("uyê", "uyề", "uyế", "uyể", "uyễ", "uyệ")).
+not_strictly_terminal_vowel("uye", mod_hat_e, ("uyê", "uyề", "uyế", "uyể", "uyễ", "uyệ")).
 % quyền and yến
-not_strictly_terminal_vowel(ye, mod_hat_e, ("yê", "yề", "yế", "yể", "yễ", "yệ")).
+not_strictly_terminal_vowel("ye", mod_hat_e, ("yê", "yề", "yế", "yể", "yễ", "yệ")).
+not_strictly_terminal_vowel("ye", mod_none, ("ye", "yè", "yé", "yẻ", "yẽ", "yẹ")).
 
 % test :-
 %     vowel_nucleus_mod_tone(s(I, V, F), s("m", "a", "m"), mod_none, tone_huyen),
@@ -343,6 +356,8 @@ not_strictly_terminal_vowel_incomplete("uo", mod_horn_uo, ("ưo", "ưò", "ưó"
 not_strictly_terminal_vowel_incomplete("uye", mod_none, ("uye", "uyè", "uyé", "uyẻ", "uyẽ", "uyẹ")).
 not_strictly_terminal_vowel_incomplete("ie", mod_none, ("ie", "iè", "ié", "iẻ", "iẽ", "iẹ")).
 not_strictly_terminal_vowel_incomplete("ie", mod_none, ("ie", "ìe", "íe", "ỉe", "ĩe", "ịe")).
+not_strictly_terminal_vowel_incomplete("ua", mod_none, ("ua", "uà", "uá", "uả", "uã", "uạ")).
+not_strictly_terminal_vowel_incomplete("ua", mod_none, ("ua", "ùa", "úa", "ủa", "ũa", "ụa")).
 not_strictly_terminal_vowel_incomplete("ue", mod_none, ("ue", "uè", "ué", "uẻ", "uẽ", "uẹ")).
 
 terminal_vowel("ai", mod_none, ("ai", "ài", "ái", "ải", "ãi", "ại")).
@@ -357,21 +372,25 @@ terminal_vowel("ia", mod_none, ("ia", "ìa", "ía", "ỉa", "ĩa", "ịa")).
 terminal_vowel("ie", mod_none, ("ie", "ìe", "íe", "ỉe", "ĩe", "ịe")).
 terminal_vowel("ieu", mod_hat_e, ("iêu", "iều", "iếu", "iểu", "iễu", "iệu")).
 terminal_vowel("iu", mod_none, ("iu", "ìu", "íu", "ỉu", "ĩu", "ịu")).
-terminal_vowel("oa", mod_none, ("oa", "oà", "oá", "oả", "oã", "oạ")) :- get_flag(bogo:dau_moi, true).
+terminal_vowel("oa", mod_none, ("oa", "oà", "oá", "oả", "oã", "oạ")) :- g_read(bogo_dau_moi, true).
 terminal_vowel("oa", mod_none, ("oa", "òa", "óa", "ỏa", "õa", "ọa")).
-terminal_vowel("oe", mod_none, ("oe", "oè", "oé", "oẻ", "oẽ", "oẹ")) :- get_flag(bogo:dau_moi, true).
+terminal_vowel("oe", mod_none, ("oe", "oè", "oé", "oẻ", "oẽ", "oẹ")) :- g_read(bogo_dau_moi, true).
 terminal_vowel("oe", mod_none, ("oe", "òe", "óe", "ỏe", "õe", "ọe")).
 terminal_vowel("oi", mod_none, ("oi", "òi", "ói", "ỏi", "õi", "ọi")).
+terminal_vowel("oi", mod_hat_o, ("ôi", "ồi", "ối", "ổi", "ỗi", "ội")).
 terminal_vowel("ua", mod_none, ("ua", "ùa", "úa", "ủa", "ũa", "ụa")).
 terminal_vowel("ui", mod_horn_u, ("ưi", "ừi", "ứi", "ửi", "ữi", "ựi")).
 terminal_vowel("ui", mod_none, ("ui", "ùi", "úi", "ủi", "ũi", "ụi")).
+terminal_vowel("uay", mod_none, ("uay", "uày", "uáy", "uảy", "uãy", "uạy")).
+terminal_vowel("uay", mod_hat_a, ("uây", "uầy", "uấy", "uẩy", "uẫy", "uậy")).
 terminal_vowel("uo", mod_horn_uo, ("uơ", "uờ", "uớ", "uở", "uỡ", "uợ")).
 terminal_vowel("uoi", mod_hat_o, ("uôi", "uồi", "uối", "uổi", "uỗi", "uội")).
 terminal_vowel("uoi", mod_horn_uo, ("ươi", "ười", "ưới", "ưởi", "ưỡi", "ượi")).
 terminal_vowel("uou", mod_horn_uo, ("ươu", "ườu", "ướu", "ưởu", "ưỡu", "ượu")).
 terminal_vowel("uu", mod_horn_u, ("ưu", "ừu", "ứu", "ửu", "ữu", "ựu")).
-terminal_vowel("uy", mod_none, ("uy", "uỳ", "uý", "uỷ", "uỹ", "uỵ")) :- get_flag(bogo:dau_moi, true).
+terminal_vowel("uy", mod_none, ("uy", "uỳ", "uý", "uỷ", "uỹ", "uỵ")) :- g_read(bogo_dau_moi, true).
 terminal_vowel("uy", mod_none, ("uy", "ùy", "úy", "ủy", "ũy", "ụy")).
+terminal_vowel("uyu", mod_none, ("uyu", "uỳu", "uýu", "uỷu", "uỹu", "uỵu")).
 terminal_vowel("y", mod_none, ("y", "ỳ", "ý", "ỷ", "ỹ", "ỵ")).
 terminal_vowel("ya", mod_none, ("ya", "ỳa", "ýa", "ỷa", "ỹa", "ỵa")).
 
@@ -381,3 +400,11 @@ terminal_vowel_incomplete("uoi", mod_none, ("uoi", "uòi", "uói", "uỏi", "uõ
 terminal_vowel_incomplete("uoi", mod_none, ("uoi", "uòi", "uói", "uỏi", "uõi", "uọi")).
 terminal_vowel_incomplete("uoi", mod_horn_uo, ("uơi", "uời", "uới", "uởi", "uỡi", "uợi")).
 terminal_vowel_incomplete("uou", mod_none, ("uou", "uòu", "uóu", "uỏu", "uõu", "uọu")).
+terminal_vowel_incomplete("uay", mod_none, ("uay", "ùay", "úay", "ủay", "ũay", "ụay")).
+
+test :-
+    findall((
+        format("Test case: ~s ~s ~n", [A, B]),
+        process_key_sequence(A, B)
+    ), test_case(A, B), Goals),
+    maplist(call, Goals).
