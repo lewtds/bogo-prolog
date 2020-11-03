@@ -258,7 +258,7 @@ consonant_initial("x") --> "x".
 consonant_initial("h") --> "h".
 consonant_initial("d") --> "d".
 % già
-consonant_initial("gi"), [V] --> "gi", vowel_chars(V).
+consonant_initial("gi"), [V] --> "gi", vowel_char([V]).
 % gì, gà
 consonant_initial("g") --> "g".
 consonant_initial("gh") --> "gh".
