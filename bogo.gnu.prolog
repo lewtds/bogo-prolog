@@ -171,13 +171,10 @@ process_key_sequence(Keys, [], Keys).
 % Performance optimization idea: give out both an output string and a syllable term and reuse the term for the next cycle.
 process_key(CurrentString, Key, OutString) :-
     % save the case information
-    string_letters(CurrentString, Letters, Cases),
-    flatten(Letters, CurrentStringLower),
+    string_letters(CurrentString, InLetters, InCases),
+    flatten(InLetters, CurrentStringLower),
 
-    (
-        vi_lower_upper(KeyLower, Key);
-        vi_lower_upper(Key, _), KeyLower = Key
-    ),
+    letter(KeyLower, KeyCase, Key, []),
 
     % break the syllable down into initial consonant, vowel nucleus and final consonant
     phrase(syllable(S), CurrentStringLower),
@@ -189,12 +186,16 @@ process_key(CurrentString, Key, OutString) :-
     % require that the output must be parsable, this is to weed out non-Vietnamese words like vowel -> vơel
     phrase(syllable(_), OutStringLower),
 
-    % restore cases
     string_letters(OutStringLower, OutLetters, _),
-    string_letters(OutString, OutLetters, Cases).
 
-process_key(CurrentString, Key, OutString) :-
-    append(CurrentString, Key, OutString).
+    (
+        (length(InLetters, N), length(OutLetters, N)) 
+    ->
+        string_letters(OutString, OutLetters, InCases)
+    ;
+        append(InCases, [KeyCase], FinalCases),
+        string_letters(OutString, OutLetters, FinalCases)
+    ).
 
 apply_key_effect(InSyllable, Key, OutSyllable) :-
     key_effect(Key, add_tone(Tone)),
