@@ -1,0 +1,616 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4E278E882E174BFC00D65D5E /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E278E872E174BFC00D65D5E /* Cocoa.framework */; };
+		4EB4C3E32E173AA600F7C587 /* InputMethodKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EB4C3E22E173AA600F7C587 /* InputMethodKit.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4EB4C3C52E173A9700F7C587 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4EB4C3AE2E173A9600F7C587 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4EB4C3B52E173A9600F7C587;
+			remoteInfo = BoGo;
+		};
+		4EB4C3CF2E173A9700F7C587 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4EB4C3AE2E173A9600F7C587 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4EB4C3B52E173A9600F7C587;
+			remoteInfo = BoGo;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		4E278E872E174BFC00D65D5E /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		4EB4C3B62E173A9600F7C587 /* BoGo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BoGo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EB4C3C42E173A9700F7C587 /* BoGoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BoGoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EB4C3CE2E173A9700F7C587 /* BoGoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BoGoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EB4C3E22E173AA600F7C587 /* InputMethodKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = InputMethodKit.framework; path = System/Library/Frameworks/InputMethodKit.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4EBC3CA52E17599700BD8C8A /* Exceptions for "BoGo" folder in "BoGo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"gprolog-1.5.0.tar.gz",
+				Info.plist,
+			);
+			target = 4EB4C3B52E173A9600F7C587 /* BoGo */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		4EB4C3B82E173A9600F7C587 /* BoGo */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4EBC3CA52E17599700BD8C8A /* Exceptions for "BoGo" folder in "BoGo" target */,
+			);
+			path = BoGo;
+			sourceTree = "<group>";
+		};
+		4EB4C3C72E173A9700F7C587 /* BoGoTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BoGoTests;
+			sourceTree = "<group>";
+		};
+		4EB4C3D12E173A9700F7C587 /* BoGoUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BoGoUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4EB4C3B32E173A9600F7C587 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4E278E882E174BFC00D65D5E /* Cocoa.framework in Frameworks */,
+				4EB4C3E32E173AA600F7C587 /* InputMethodKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4EB4C3C12E173A9700F7C587 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4EB4C3CB2E173A9700F7C587 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4EB4C3AD2E173A9600F7C587 = {
+			isa = PBXGroup;
+			children = (
+				4EB4C3B82E173A9600F7C587 /* BoGo */,
+				4EB4C3C72E173A9700F7C587 /* BoGoTests */,
+				4EB4C3D12E173A9700F7C587 /* BoGoUITests */,
+				4EB4C3E12E173AA600F7C587 /* Frameworks */,
+				4EB4C3B72E173A9600F7C587 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4EB4C3B72E173A9600F7C587 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4EB4C3B62E173A9600F7C587 /* BoGo.app */,
+				4EB4C3C42E173A9700F7C587 /* BoGoTests.xctest */,
+				4EB4C3CE2E173A9700F7C587 /* BoGoUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4EB4C3E12E173AA600F7C587 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4E278E872E174BFC00D65D5E /* Cocoa.framework */,
+				4EB4C3E22E173AA600F7C587 /* InputMethodKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4EB4C3B52E173A9600F7C587 /* BoGo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4EB4C3D82E173A9700F7C587 /* Build configuration list for PBXNativeTarget "BoGo" */;
+			buildPhases = (
+				4EB4C3B22E173A9600F7C587 /* Sources */,
+				4EB4C3B32E173A9600F7C587 /* Frameworks */,
+				4EB4C3B42E173A9600F7C587 /* Resources */,
+				4E5EC8EF2E173E250067D19F /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4EB4C3B82E173A9600F7C587 /* BoGo */,
+			);
+			name = BoGo;
+			packageProductDependencies = (
+			);
+			productName = BoGo;
+			productReference = 4EB4C3B62E173A9600F7C587 /* BoGo.app */;
+			productType = "com.apple.product-type.application";
+		};
+		4EB4C3C32E173A9700F7C587 /* BoGoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4EB4C3DB2E173A9700F7C587 /* Build configuration list for PBXNativeTarget "BoGoTests" */;
+			buildPhases = (
+				4EB4C3C02E173A9700F7C587 /* Sources */,
+				4EB4C3C12E173A9700F7C587 /* Frameworks */,
+				4EB4C3C22E173A9700F7C587 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4EB4C3C62E173A9700F7C587 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				4EB4C3C72E173A9700F7C587 /* BoGoTests */,
+			);
+			name = BoGoTests;
+			packageProductDependencies = (
+			);
+			productName = BoGoTests;
+			productReference = 4EB4C3C42E173A9700F7C587 /* BoGoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		4EB4C3CD2E173A9700F7C587 /* BoGoUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4EB4C3DE2E173A9700F7C587 /* Build configuration list for PBXNativeTarget "BoGoUITests" */;
+			buildPhases = (
+				4EB4C3CA2E173A9700F7C587 /* Sources */,
+				4EB4C3CB2E173A9700F7C587 /* Frameworks */,
+				4EB4C3CC2E173A9700F7C587 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4EB4C3D02E173A9700F7C587 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				4EB4C3D12E173A9700F7C587 /* BoGoUITests */,
+			);
+			name = BoGoUITests;
+			packageProductDependencies = (
+			);
+			productName = BoGoUITests;
+			productReference = 4EB4C3CE2E173A9700F7C587 /* BoGoUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4EB4C3AE2E173A9600F7C587 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					4EB4C3B52E173A9600F7C587 = {
+						CreatedOnToolsVersion = 16.4;
+						LastSwiftMigration = 1640;
+					};
+					4EB4C3C32E173A9700F7C587 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 4EB4C3B52E173A9600F7C587;
+					};
+					4EB4C3CD2E173A9700F7C587 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 4EB4C3B52E173A9600F7C587;
+					};
+				};
+			};
+			buildConfigurationList = 4EB4C3B12E173A9600F7C587 /* Build configuration list for PBXProject "BoGo" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 4EB4C3AD2E173A9600F7C587;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 4EB4C3B72E173A9600F7C587 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4EB4C3B52E173A9600F7C587 /* BoGo */,
+				4EB4C3C32E173A9700F7C587 /* BoGoTests */,
+				4EB4C3CD2E173A9700F7C587 /* BoGoUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4EB4C3B42E173A9600F7C587 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4EB4C3C22E173A9700F7C587 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4EB4C3CC2E173A9700F7C587 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4E5EC8EF2E173E250067D19F /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Copy bundle to Input Methods folder\nDEST_DIR=\"$HOME/Library/Input Methods\"\n\n# Create destination directory if needed\nmkdir -p \"$DEST_DIR\"\n\n# Copy the built bundle\ncp -r -X \"${BUILT_PRODUCTS_DIR}/BoGo.app\" \"$DEST_DIR/\"\n\necho \"Copied ${FULL_PRODUCT_NAME} to ${DEST_DIR}\"\n\n# Optional: Set permissions\nchmod -R 755 \"$DEST_DIR/${FULL_PRODUCT_NAME}\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4EB4C3B22E173A9600F7C587 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4EB4C3C02E173A9700F7C587 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4EB4C3CA2E173A9700F7C587 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4EB4C3C62E173A9700F7C587 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4EB4C3B52E173A9600F7C587 /* BoGo */;
+			targetProxy = 4EB4C3C52E173A9700F7C587 /* PBXContainerItemProxy */;
+		};
+		4EB4C3D02E173A9700F7C587 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4EB4C3B52E173A9600F7C587 /* BoGo */;
+			targetProxy = 4EB4C3CF2E173A9700F7C587 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		4EB4C3D62E173A9700F7C587 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		4EB4C3D72E173A9700F7C587 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		4EB4C3D92E173A9700F7C587 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = BoGo/BoGo.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "/opt/homebrew/Cellar/swi-prolog/9.2.9/lib/swipl/include";
+				INFOPLIST_FILE = BoGo/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "/opt/homebrew/Cellar/swi-prolog/9.2.9/lib/swipl/lib/arm64-darwin";
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-lswipl";
+				PRODUCT_BUNDLE_IDENTIFIER = com.lewtds.inputmethod.BoGo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "BoGo/BoGo-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		4EB4C3DA2E173A9700F7C587 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = BoGo/BoGo.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "/opt/homebrew/Cellar/swi-prolog/9.2.9/lib/swipl/include";
+				INFOPLIST_FILE = BoGo/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "/opt/homebrew/Cellar/swi-prolog/9.2.9/lib/swipl/lib/arm64-darwin";
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-lswipl";
+				PRODUCT_BUNDLE_IDENTIFIER = com.lewtds.inputmethod.BoGo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "BoGo/BoGo-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		4EB4C3DC2E173A9700F7C587 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.3;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lewtds.inputmethod.BoGo.BoGoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BoGo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BoGo";
+			};
+			name = Debug;
+		};
+		4EB4C3DD2E173A9700F7C587 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.3;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lewtds.inputmethod.BoGo.BoGoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BoGo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BoGo";
+			};
+			name = Release;
+		};
+		4EB4C3DF2E173A9700F7C587 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lewtds.inputmethod.BoGo.BoGoUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = BoGo;
+			};
+			name = Debug;
+		};
+		4EB4C3E02E173A9700F7C587 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lewtds.inputmethod.BoGo.BoGoUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = BoGo;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4EB4C3B12E173A9600F7C587 /* Build configuration list for PBXProject "BoGo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4EB4C3D62E173A9700F7C587 /* Debug */,
+				4EB4C3D72E173A9700F7C587 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4EB4C3D82E173A9700F7C587 /* Build configuration list for PBXNativeTarget "BoGo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4EB4C3D92E173A9700F7C587 /* Debug */,
+				4EB4C3DA2E173A9700F7C587 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4EB4C3DB2E173A9700F7C587 /* Build configuration list for PBXNativeTarget "BoGoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4EB4C3DC2E173A9700F7C587 /* Debug */,
+				4EB4C3DD2E173A9700F7C587 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4EB4C3DE2E173A9700F7C587 /* Build configuration list for PBXNativeTarget "BoGoUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4EB4C3DF2E173A9700F7C587 /* Debug */,
+				4EB4C3E02E173A9700F7C587 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 4EB4C3AE2E173A9600F7C587 /* Project object */;
+}

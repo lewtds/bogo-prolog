@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>InputMethodConnectionName</key>
+	<string>Bogo_1_Connection</string>
+	<key>InputMethodServerControllerClass</key>
+	<string>IMKitSampleInputController</string>
+	<key>LSBackgroundOnly</key>
+	<true/>
+        
+    <key>LSUIElement</key>
+    <true/>
+    
+	<key>tsInputMethodCharacterRepertoireKey</key>
+	<array>
+		<string>Latn</string>
+	</array>
+    
+	<key>tsInputMethodIconFileKey</key>
+	<string>main.tiff</string>
+    
+    <key>NSPrincipalClass</key>
+    <string>IMKitSampleInputController</string>
+</dict>
+</plist>
