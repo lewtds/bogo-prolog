@@ -1,308 +1,305 @@
 :- set_prolog_flag(encoding, utf8).
-
-% Needs SWI-Prolog version >= 8.1.13 for with_tty_raw
-%
-% Usage example:
-% ?- consult('bogo.prolog').
-% ?- interactive.
-%
-% Then start typing.
-%
-% [t],t
-% [t,r],tr
-% [t,r,u],tru
-% [t,r,u,o],truo
-% [t,r,u,o,w],trươ
-% [t,r,u,o,w,n],trươn
-% [t,r,u,o,w,n,g],trương
-% [t,r,u,o,w,n,g,f],trường
-% [h],h
-% [h,o],ho
-% [h,o,p],hop
-% [h,o,p,w],hơp
-% [h,o,p,w,j],hợp
-interactive :- with_tty_raw(loop_process_key([])).
-
-:- set_flag(bogo:dau_moi, true).
-
-% food for thought:
-% gìn giữ
-% giặt gịa
-% giặt gyạ (archaic)
-% giặt gỵa
-% context sensitive grammar?
-
-loop_process_key(Sequence) :-
-    get_char(C),
-    (   C \= ' ',
-        append(Sequence, [C], Sequence2),
-        process_key_sequence(Sequence2, [], OutCharList),
-        atom_chars(Atom, OutCharList),
-        writeln((Sequence2, Atom)),
-        loop_process_key(Sequence2)
-    ;   loop_process_key([]) % start a new sequence with space character
-    ).
-
-% TODO: Upper case support
+:- include(test_cases).
+:- use_module(library(dcg/high_order)).
 
 % TELEX
-key_effect(f, add_tone(tone_huyen)).
-key_effect(s, add_tone(tone_sac)).
-key_effect(r, add_tone(tone_hoi)).
-key_effect(x, add_tone(tone_nga)).
-key_effect(j, add_tone(tone_nang)).
+key_effect(f, add_tone(tone_grave)).
+key_effect(s, add_tone(tone_acute)).
+key_effect(r, add_tone(tone_hook)).
+key_effect(x, add_tone(tone_tilde)).
+key_effect(j, add_tone(tone_dot)).
 
-key_effect(a, add_vowel_mod(mod_hat_a)).
-key_effect(e, add_vowel_mod(mod_hat_e)).
-key_effect(o, add_vowel_mod(mod_hat_o)).
-key_effect(w, add_vowel_mod(mod_horn_uo)).
-key_effect(w, add_vowel_mod(mod_horn_o)).
-key_effect(w, add_vowel_mod(mod_horn_u)).
-key_effect(w, add_vowel_mod(mod_breve_a)).
+key_effect(a, add_nuclei_mod(mod_hat_a)).
+key_effect(e, add_nuclei_mod(mod_hat_e)).
+key_effect(o, add_nuclei_mod(mod_hat_o)).
 
-key_effect(d, add_consonant_mod(mod_dash_d)).
+key_effect(w, add_nuclei_mod(mod_breve_a)).
 
-% VNI
-key_effect('1', add_tone(tone_sac)).
-key_effect('2', add_tone(tone_huyen)).
-key_effect('3', add_tone(tone_hoi)).
-key_effect('4', add_tone(tone_nga)).
-key_effect('5', add_tone(tone_nang)).
+key_effect(w, add_nuclei_mod(mod_horn_uo)).
+key_effect(w, add_nuclei_mod(mod_horn_o)).
+key_effect(w, add_nuclei_mod(mod_horn_u)).
+key_effect(o, add_nuclei_mod(mod_complete_horn_uo)).
 
-key_effect('6', add_vowel_mod(mod_hat_a)).
-key_effect('6', add_vowel_mod(mod_hat_e)).
-key_effect('6', add_vowel_mod(mod_hat_o)).
-key_effect('7', add_vowel_mod(mod_horn_uo)).
-key_effect('7', add_vowel_mod(mod_horn_o)).
-key_effect('7', add_vowel_mod(mod_horn_u)).
-key_effect('8', add_vowel_mod(mod_breve_a)).
+key_effect(d, add_onset_mod(mod_dash_d)).
 
-key_effect('9', add_consonant_mod(mod_dash_d)).
+process_atom(InputAtom, OutputAtom) :-
+    atom_chars(InputAtom, Keys),
+    process_key_sequence(Keys, OutString),
+    atom_chars(OutputAtom, OutString).
 
-% Usage example:
-%
-% ?- process_key_sequence([b, a, n, s, w], [] , Output).
-%    Output = [b, ắ, n].
-%
+process_key_sequence(Keys, OutString) :-
+    foldl(process_key, Keys, [], OutString), !.
+% If the key sequence cannot be processed, return the keys as is.
+process_key_sequence(Keys, Keys).
 
-process_atom(AtomIn, OutList) :-
-    atom_chars(AtomIn, Sequence),
-    process_key_sequence(Sequence, OutList).
+% Try to apply a key effect to the current syllable.
+process_key(Key, InAtomList, OutAtomList) :-
+    phrase(syllable(Onset, Nuclei, Final, Tone), InAtomList),
+    apply_key_effect(syllable(Onset, Nuclei, Final, Tone), Key, OutSyllable),
+    phrase(OutSyllable, OutAtomList), !.
 
-process_key_sequence(Sequence, Output) :-
-    process_key_sequence(Sequence, [], Output).
+% If the key effect cannot be applied, just append the key to the current string.
+process_key(Key, CurrentString, OutString) :-
+    append(CurrentString, [Key], OutString),
+    % Require the result to be a valid syllable.
+    phrase(syllable(_, _, _, _), OutString).
 
-process_key_sequence([Key|Rest], CurrentString, Output) :-
-    once(process_key(CurrentString, Key, Output1)),
-    process_key_sequence(Rest, Output1, Output).
 
-process_key_sequence([], CurrentString, CurrentString).
+% Replace the tone
+apply_key_effect(syllable(Onset, Nuclei, Final, Tone), Key, syllable(Onset, Nuclei, Final, NewTone)) :-
+    key_effect(Key, add_tone(NewTone)),
+    Tone \= NewTone.
 
-% fall back to the raw sequence if processing fails (vowel -> vơel)
-process_key_sequence(Keys, [], Keys).
+% Add a nuclei modification
+apply_key_effect(syllable(Onset, Nuclei, Final, Tone), Key, syllable(Onset, NucleiModded, Final, Tone)) :-
+    key_effect(Key, add_nuclei_mod(Mod)),
+    nuclei_mod(Mod, Nuclei, NucleiModded).
 
-% Try applying the effect of the key, assuming that there is one.
-% Performance optimization idea: give out both an output string and a syllable term and reuse the term for the next cycle.
-process_key(CurrentString, Key, OutString) :-
-    % break the syllable down into initial consonant, vowel nucleus and final consonant
-    once(phrase(syllable(I, V, F), CurrentString)),
+% Add an onset modification
+apply_key_effect(syllable(d, Nuclei, Final, Tone), Key, syllable(đ, Nuclei, Final, Tone)) :-
+    key_effect(Key, add_onset_mod(mod_dash_d)).
 
-    apply_key_effect(s(I, V, F), Key, Out),
-    rebalance_incomplete_form(Out, CleanedSyllable),
 
-    syllable_atom(CleanedSyllable, OutputAtom),
-    atom_chars(OutputAtom, OutString),
+% https://www.hieuthi.com/blog/2017/03/21/all-vietnamese-syllables.html
 
-    % require that the output must be parsable, this is to weed out non-Vietnamese words like vowel -> vơel
-    once(phrase(syllable(_, _, _), OutString)).
+syllable('', '', '', tone_blank) --> [].
+syllable(O, '', '', tone_blank) --> onset(O), { O \= '' }.
+syllable(O, '', '', tone_blank) --> { member(O, [k, gh, ngh]), atom_chars(O, Os) }, Os.
 
-syllable_atom(s(I, V, F), Atom) :- atomic_list_concat([I, V, F], Atom).
+% gi and qu are only allowed to be onset if they are followed by a rhyme
+syllable(gi, N, F, T) --> [g, i], rhyme(N, F, T), !.
+syllable(qu, N, F, T) --> [q, u], rhyme(N, F, T), !.
 
-apply_key_effect(InSyllable, Key, OutSyllable) :-
-    key_effect(Key, add_tone(Tone)),
-    syllable_tone(InSyllable, Tone, OutSyllable).
+% ngh, gh and k can either standalone with no rhyme or be followed by i, e, ê, ie, iê
+syllable(ngh, N, F, T) --> [n, g, h], rhyme(N, F, T), { member(N, [i, e, ê, ie, iê]) }.
+syllable(gh, N, F, T) --> [g, h], rhyme(N, F, T), { member(N, [i, e, ê, ie, iê]) }.
+syllable(k, N, F, T) --> [k], rhyme(N, F, T), { member(N, [i, e, ê, ie, iê]) }.
 
-apply_key_effect(InSyllable, Key, OutSyllable) :-
-    key_effect(Key, add_vowel_mod(Mod)),
-    syllable_vowel_mod(InSyllable, Mod, OutSyllable).
+syllable(O, N, F, T) --> onset(O), rhyme(N, F, T).
+syllable('', N, F, T) --> rhyme(N, F, T).
 
-apply_key_effect(InSyllable, Key, OutSyllable) :-
-    key_effect(Key, add_consonant_mod(Mod)),
-    syllable_consonant_mod(InSyllable, Mod, OutSyllable).
+onset(O) --> { member(O, [
+    b, d, h, l, m, n, p, r, s, t, v, q, x, z, đ,
+    tr, th, ch, ph, nh, kh,
+    ng, g, c
+]), atom_chars(O, Os) }, Os.
 
-% If none of the transformation rules apply, append the key to the end of the syllable
-apply_key_effect(s(I, V, ''), Key, s(I, V2, '')) :- vowel_char(Key, [Key], []), atom_concat(V, Key, V2).
-apply_key_effect(s(I, '', ''), Key, s(I2, '', '')) :- atom_concat(I, Key, I2).
-apply_key_effect(s(I, V, F), Key, s(I, V, F2)) :- atom_concat(F, Key, F2).
 
-syllable_vowel_mod(s(I, V, F), Mod, s(I, V_out, F)) :-
-    vowel_nucleus_mod_tone(s(I, V, F), s(I, V_raw, F), _, Tone),
-    vowel_nucleus_mod_tone(s(I, V_out, F), s(I, V_raw, F), Mod, Tone).
+rhyme(Nuclei, Final, Tone) --> {
+    rhyme_with_tone(Nuclei, Final, Tone, RWTones),
+    atom_chars(RWTones, Rs)
+}, Rs.
 
-syllable_tone(s(I, V, F), Tone, s(I, V_out, F)) :-
-    vowel_nucleus_mod_tone(s(I, V, F), s(I, V_raw, F), Mod, _),
-    vowel_nucleus_mod_tone(s(I, V_out, F), s(I, V_raw, F), Mod, Tone).
+rhyme_with_tone(NucleiNoTone, Final, Tone, Rhyme) :- 
+    (
+        unconstrained_rhyme([Nuclei, _, _, _, _, _], Finals), NucleiNoTone = Nuclei, Tone = tone_blank;
+        unconstrained_rhyme([NucleiNoTone, Nuclei, _, _, _, _], Finals), Tone = tone_grave;
+        unconstrained_rhyme([NucleiNoTone, _, Nuclei, _, _, _], Finals), Tone = tone_acute;
+        unconstrained_rhyme([NucleiNoTone, _, _, Nuclei, _, _], Finals), Tone = tone_hook;
+        unconstrained_rhyme([NucleiNoTone, _, _, _, Nuclei, _], Finals), Tone = tone_tilde;
+        unconstrained_rhyme([NucleiNoTone, _, _, _, _, Nuclei], Finals), Tone = tone_dot;
 
-% Eg: to turn thuơng into thương, mịen to miẹn
-rebalance_incomplete_form(s(I, V, F), s(I, V_out, F)) :-
-    vowel_nucleus_mod_tone(s(I, V, F), s(I, V_raw, F), Mod, Tone),
-    vowel_nucleus_mod_tone(s(I, V_out, F), s(I, V_raw, F), Mod, Tone).
+        kpt_rhyme([Nuclei, _, _], Finals), NucleiNoTone = Nuclei, Tone = tone_blank;
+        kpt_rhyme([NucleiNoTone, Nuclei, _], Finals), Tone = tone_acute;
+        kpt_rhyme([NucleiNoTone, _, Nuclei], Finals), Tone = tone_dot
+    ),
+    member(Final, Finals),
+    atom_concat(Nuclei, Final, Rhyme).
 
-% there is the only case of d -> đ here so it's hard-coded
-syllable_consonant_mod(s(d, V, F), _, s(đ, V, F)).
+% Unconstrained rhymes are those that can be used with any tone.
+% KPT rhymes are those that can only be used with the acute or dot tone.
+:- discontiguous unconstrained_rhyme/2.
+:- discontiguous kpt_rhyme/2.
 
-%%%%%%%%%%%%%
-% Parser section
-%%%%%%%%%%%%%
+unconstrained_rhyme([a, à, á, ả, ã, ạ], ['', i, o, u, y, m, n, ng, nh]).
+kpt_rhyme([a, á, ạ], [c, ch, t, p]).
 
-syllable(I, V, F) --> consonant_initial(I), vowel(V), consonant_final(F).
+unconstrained_rhyme([ă, ằ, ắ, ẳ, ẵ, ặ], ['', m, n, ng]).
+kpt_rhyme([ă, ắ, ặ], [c, t, p]).
 
-vowel(V) --> vowel_chars(Vs), { atom_chars(V, Vs) }.
+unconstrained_rhyme([â, ầ, ấ, ẩ, ẫ, ậ], ['', u, y, m, n, ng]).
+kpt_rhyme([â, ấ, ậ], [c, t, p]).
 
-vowel_chars([X|Rest]) --> vowel_char(X), vowel_chars(Rest).
-vowel_chars([]) --> [].
+unconstrained_rhyme([â, ầ, ấ, ẩ, ẫ, ậ], ['', u, y, m, n, ng]).
+kpt_rhyme([â, ấ, ậ], [c, t, p]).
 
-vowel_char(C) --> [C], {
-    atom_chars(àáảãạaằắẳẵặăầấẩẫậâèéẻẽẹeềếểễệêìíỉĩịiòóỏõọoồốổỗộôờớởỡợơùúủũụuừứửữựưỳýỷỹỵy, AtomList),
-    member(C, AtomList)
-}.
+unconstrained_rhyme([e, è, é, ẻ, ẽ, ẹ], ['', o, u, m, n, ng]).
+kpt_rhyme([e, é, ẹ], [c, t, p]).
 
-consonant_initial('') --> [].
-consonant_initial(m) --> [m].
-consonant_initial(n) --> [n].
-consonant_initial(nh) --> [n, h].
-consonant_initial(ng) --> [n, g].
-consonant_initial(ngh) --> [n, g, h].
-consonant_initial(p) --> [p].
-consonant_initial(t) --> [t].
-consonant_initial(tr) --> [t, r].
-consonant_initial(ch) --> [c, h].
-consonant_initial(c) --> [c].
-consonant_initial(k) --> [k].
-consonant_initial(qu) --> [q, u].
-consonant_initial(q) --> [q]. % I'm a bit iffy on this case since it allows typing teencode-looking words like qán, qẩn
-consonant_initial(ph) --> [p, h].
-consonant_initial(th) --> [t, h].
-consonant_initial(kh) --> [k, h].
-consonant_initial(b) --> [b].
-consonant_initial(đ) --> [đ].
-consonant_initial(s) --> [s].
-consonant_initial(x) --> [x].
-consonant_initial(h) --> [h].
-consonant_initial(d) --> [d].
-% già
-consonant_initial(gi), [V] --> [g, i], vowel(V).
-% gì, gà
-consonant_initial(g) --> [g].
-consonant_initial(gh) --> [g, h].
-consonant_initial(v) --> [v].
-consonant_initial(l) --> [l].
-consonant_initial(r) --> [r].
-% for the dzũng zũng people
-consonant_initial(dz) --> [d, z].
-consonant_initial(z) --> [z].
+unconstrained_rhyme([ê, ề, ế, ể, ễ, ệ], ['', u, m, n, ng]).
+kpt_rhyme([ê, ế, ệ], [ch, t, p]).
 
-consonant_final('') --> [].
-consonant_final(n) --> [n].
-consonant_final(nh) --> [n, h].
-consonant_final(ng) --> [n, g].
-consonant_final(c) --> [c].
-consonant_final(ch) --> [c, h].
-consonant_final(p) --> [p].
-consonant_final(t) --> [t].
-consonant_final(n) --> [n].
-consonant_final(m) --> [m].
+unconstrained_rhyme([ê, ề, ế, ể, ễ, ệ], ['', u, m, n, ng]).
+kpt_rhyme([ê, ế, ệ], [ch, t, p]).
 
-% vowel nucleus transformation table schema:
-%   resulting syllable, base syllable, vowel mod, tone, allow incomplete
-vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_ngang) :- terminal_vowel(Raw, Mod, (Result, _, _, _, _, _)).
-vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_huyen) :- terminal_vowel(Raw, Mod, (_, Result, _, _, _, _)).
-vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_sac)   :- terminal_vowel(Raw, Mod, (_, _, Result, _, _, _)).
-vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_hoi)   :- terminal_vowel(Raw, Mod, (_, _, _, Result, _, _)).
-vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_nga)   :- terminal_vowel(Raw, Mod, (_, _, _, _, Result, _)).
-vowel_nucleus_mod_tone(s(I, Result, ''), s(I, Raw, ''), Mod, tone_nang)  :- terminal_vowel(Raw, Mod, (_, _, _, _, _, Result)).
+unconstrained_rhyme([i, ì, í, ỉ, ĩ, ị], ['', a, u, m, n, nh]).
+kpt_rhyme([i, í, ị], [ch, t, p]).
 
-vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_ngang) :- not_strictly_terminal_vowel(Raw, Mod, (Result, _, _, _, _, _)).
-vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_huyen) :- not_strictly_terminal_vowel(Raw, Mod, (_, Result, _, _, _, _)).
-vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_sac)   :- not_strictly_terminal_vowel(Raw, Mod, (_, _, Result, _, _, _)).
-vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_hoi)   :- not_strictly_terminal_vowel(Raw, Mod, (_, _, _, Result, _, _)).
-vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_nga)   :- not_strictly_terminal_vowel(Raw, Mod, (_, _, _, _, Result, _)).
-vowel_nucleus_mod_tone(s(I, Result, F), s(I, Raw, F), Mod, tone_nang)  :- not_strictly_terminal_vowel(Raw, Mod, (_, _, _, _, _, Result)).
+unconstrained_rhyme([o, ò, ó, ỏ, õ, ọ], ['', i, m, n, ng]).
+kpt_rhyme([o, ó, ọ], [c, t, p]).
 
-vowel_nucleus_mod_tone(s(I, V, F), s(I, V, F), mod_none, tone_ngang).
+unconstrained_rhyme([ô, ồ, ố, ổ, ỗ, ộ], ['', i, m, n, ng]).
+kpt_rhyme([ô, ố, ộ], [c, t, p]).
 
-% not_strictly_terminal_vowel means the vowel can be both terminal and non-terminal.
-% Would it be useful to also distinguish strictly non-terminal vowels?
-not_strictly_terminal_vowel(a, mod_breve_a, (ă, ằ, ắ, ẳ, ẵ, ặ)).
-not_strictly_terminal_vowel(a, mod_hat_a, (â, ầ, ấ, ẩ, ẫ, ậ)).
-not_strictly_terminal_vowel(a, mod_none, (a, à, á, ả, ã, ạ)).
-not_strictly_terminal_vowel(e, mod_hat_e, (ê, ề, ế, ể, ễ, ệ)).
-not_strictly_terminal_vowel(e, mod_none, (e, è, é, ẻ, ẽ, ẹ)).
-not_strictly_terminal_vowel(i, mod_none, (i, ì, í, ỉ, ĩ, ị)).
-not_strictly_terminal_vowel(ie, mod_hat_e, (iê, iề, iế, iể, iễ, iệ)).
-not_strictly_terminal_vowel(o, mod_hat_o, (ô, ồ, ố, ổ, ỗ, ộ)).
-not_strictly_terminal_vowel(o, mod_horn_o, (ơ, ờ, ớ, ở, ỡ, ợ)).
-not_strictly_terminal_vowel(o, mod_none, (o, ò, ó, ỏ, õ, ọ)).
-not_strictly_terminal_vowel(oa, mod_breve_a, (oă, oằ, oắ, oẳ, oẵ, oặ)).
-not_strictly_terminal_vowel(oa, mod_none, (oa, oà, oá, oả, oã, oạ)).
-not_strictly_terminal_vowel(u, mod_horn_u, (ư, ừ, ứ, ử, ữ, ự)).
-not_strictly_terminal_vowel(u, mod_none, (u, ù, ú, ủ, ũ, ụ)).
-not_strictly_terminal_vowel(ue, mod_hat_e, (uê, uề, uế, uể, uễ, uệ)).
-not_strictly_terminal_vowel(ua, mod_hat_a, (uâ, uầ, uấ, uẩ, uẫ, uậ)).
-not_strictly_terminal_vowel(uo, mod_hat_o, (uô, uồ, uố, uổ, uỗ, uộ)).
-not_strictly_terminal_vowel(uo, mod_horn_uo, (ươ, ườ, ướ, ưở, ưỡ, ượ)).
-not_strictly_terminal_vowel(uo, mod_horn_uo, (uơ, uờ, uớ, uở, uỡ, uợ)).
-% huyền, thuyền
-not_strictly_terminal_vowel(uye, mod_hat_e, (uyê, uyề, uyế, uyể, uyễ, uyệ)).
-% quyền and yến
-not_strictly_terminal_vowel(ye, mod_hat_e, (yê, yề, yế, yể, yễ, yệ)).
+unconstrained_rhyme([ơ, ờ, ớ, ở, ỡ, ợ], ['', i, m, n]).
+kpt_rhyme([ơ, ớ, ợ], [t, p]).
 
-% The incomplete forms happen as transitional states before the final word. For example, if you type huyenf then you get
-% huyèn, an arguably invalid VNmese word, but if you type 'e' after that, you get huyền, a valid word.
-% We don't do anything with the incomplete forms yet but it's a good distintion to make, at least at the mental level.
-not_strictly_terminal_vowel(A, B, C) :- not_strictly_terminal_vowel_incomplete(A, B, C).
+unconstrained_rhyme([u, ù, ú, ủ, ũ, ụ], ['', a, i, u, m, n, ng]).
+kpt_rhyme([u, ú, ụ], [c, t, p]).
 
-not_strictly_terminal_vowel_incomplete(uo, mod_none, (uo, uò, uó, uỏ, uõ, uọ)).
-not_strictly_terminal_vowel_incomplete(uo, mod_horn_uo, (ưo, ừo, ứo, ửo, ữo, ựo)).
-not_strictly_terminal_vowel_incomplete(uo, mod_horn_uo, (ưo, ưò, ưó, ưỏ, ưõ, ưọ)).
-not_strictly_terminal_vowel_incomplete(uye, mod_none, (uye, uyè, uyé, uyẻ, uyẽ, uyẹ)).
-not_strictly_terminal_vowel_incomplete(ie, mod_none, (ie, iè, ié, iẻ, iẽ, iẹ)).
-not_strictly_terminal_vowel_incomplete(ie, mod_none, (ie, ìe, íe, ỉe, ĩe, ịe)).
-not_strictly_terminal_vowel_incomplete(ue, mod_none, (ue, uè, ué, uẻ, uẽ, uẹ)).
+unconstrained_rhyme([ư, ừ, ứ, ử, ữ, ự], ['', a, i, u, m, n, ng]).
+kpt_rhyme([ư, ứ, ự], [c, t]).
 
-terminal_vowel(ai, mod_none, (ai, ài, ái, ải, ãi, ại)).
-terminal_vowel(ao, mod_none, (ao, ào, áo, ảo, ão, ạo)).
-terminal_vowel(au, mod_hat_a, (âu, ầu, ấu, ẩu, ẫu, ậu)).
-terminal_vowel(au, mod_none, (au, àu, áu, ảu, ãu, ạu)).
-terminal_vowel(ay, mod_hat_a, (ây, ầy, ấy, ẩy, ẫy, ậy)).
-terminal_vowel(ay, mod_none, (ay, ày, áy, ảy, ãy, ạy)).
-terminal_vowel(eo, mod_none, (eo, èo, éo, ẻo, ẽo, ẹo)).
-terminal_vowel(eu, mod_hat_e, (êu, ều, ếu, ểu, ễu, ệu)).
-terminal_vowel(ia, mod_none, (ia, ìa, ía, ỉa, ĩa, ịa)).
-terminal_vowel(ie, mod_none, (ie, ìe, íe, ỉe, ĩe, ịe)).
-terminal_vowel(ieu, mod_hat_e, (iêu, iều, iếu, iểu, iễu, iệu)).
-terminal_vowel(iu, mod_none, (iu, ìu, íu, ỉu, ĩu, ịu)).
-terminal_vowel(oa, mod_none, (oa, oà, oá, oả, oã, oạ)) :- get_flag(bogo:dau_moi, true).
-terminal_vowel(oa, mod_none, (oa, òa, óa, ỏa, õa, ọa)).
-terminal_vowel(oe, mod_none, (oe, oè, oé, oẻ, oẽ, oẹ)) :- get_flag(bogo:dau_moi, true).
-terminal_vowel(oe, mod_none, (oe, òe, óe, ỏe, õe, ọe)).
-terminal_vowel(oi, mod_none, (oi, òi, ói, ỏi, õi, ọi)).
-terminal_vowel(ua, mod_none, (ua, ùa, úa, ủa, ũa, ụa)).
-terminal_vowel(ui, mod_horn_u, (ưi, ừi, ứi, ửi, ữi, ựi)).
-terminal_vowel(ui, mod_none, (ui, ùi, úi, ủi, ũi, ụi)).
-terminal_vowel(uo, mod_horn_uo, (uơ, uờ, uớ, uở, uỡ, uợ)).
-terminal_vowel(uoi, mod_hat_o, (uôi, uồi, uối, uổi, uỗi, uội)).
-terminal_vowel(uoi, mod_horn_uo, (ươi, ười, ưới, ưởi, ưỡi, ượi)).
-terminal_vowel(uou, mod_horn_uo, (ươu, ườu, ướu, ưởu, ưỡu, ượu)).
-terminal_vowel(uu, mod_horn_u, (ưu, ừu, ứu, ửu, ữu, ựu)).
-terminal_vowel(uy, mod_none, (uy, uỳ, uý, uỷ, uỹ, uỵ)) :- get_flag(bogo:dau_moi, true).
-terminal_vowel(uy, mod_none, (uy, ùy, úy, ủy, ũy, ụy)).
-terminal_vowel(y, mod_none, (y, ỳ, ý, ỷ, ỹ, ỵ)).
-terminal_vowel(ya, mod_none, (ya, ỳa, ýa, ỷa, ỹa, ỵa)).
+unconstrained_rhyme([y, ỳ, ý, ỷ, ỹ, ỵ], ['']).
 
-terminal_vowel(A, B, C) :- terminal_vowel_incomplete(A, B, C).
+unconstrained_rhyme([ie, iè, ié, iẻ, iẽ, iẹ], ['', u, m, n, ng]).
+kpt_rhyme([ie, ié, iẹ], [c, t, p]).
 
-terminal_vowel_incomplete(uoi, mod_none, (uoi, uòi, uói, uỏi, uõi, uọi)).
-terminal_vowel_incomplete(uoi, mod_none, (uoi, uòi, uói, uỏi, uõi, uọi)).
-terminal_vowel_incomplete(uoi, mod_horn_uo, (uơi, uời, uới, uởi, uỡi, uợi)).
-terminal_vowel_incomplete(uou, mod_none, (uou, uòu, uóu, uỏu, uõu, uọu)).
+unconstrained_rhyme([iê, iề, iế, iể, iễ, iệ], ['', u, m, n, ng]).
+kpt_rhyme([iê, iế, iệ], [c, t, p]).
+
+unconstrained_rhyme([oa, òa, óa, ỏa, õa, ọa], ['', i, o, y, m, n, ng, nh]).
+kpt_rhyme([oa, óa, ọa], [c, ch, t, p]).
+
+unconstrained_rhyme([oă, oằ, oắ, oẳ, oẵ, oặ], ['', i, o, y, m, n, ng, nh]).
+kpt_rhyme([oă, oắ, oặ], [c, t]).
+
+unconstrained_rhyme([oe, òe, óe, ỏe, õe, ọe], ['', o, m, n]).
+kpt_rhyme([oe, óe, ọe], [t]).
+
+unconstrained_rhyme([oo, òo, óo, ỏo, õo, ọo], ['', ng]).
+kpt_rhyme([oo, óo, ọo], [c]).
+
+unconstrained_rhyme([ua, ùa, úa, ủa, ũa, ụa], ['', y, n, ng]).
+kpt_rhyme([ua, úa, ụa], [t]).
+
+unconstrained_rhyme([ua, uà, uá, uả, uã, uạ], ['', y, n, ng]).
+kpt_rhyme([ua, uá, uạ], [t]).
+
+unconstrained_rhyme([uâ, uầ, uấ, uẩ, uẫ, uậ], ['', y, n, ng]).
+kpt_rhyme([uâ, uấ, uậ], [t]).
+
+unconstrained_rhyme([uê, uề, uế, uể, uễ, uệ], ['', nh]).
+kpt_rhyme([uê, uế, uệ], [ch]).
+
+unconstrained_rhyme([uo, uò, uó, uỏ, uõ, uọ], ['', i, m, n, ng]).
+kpt_rhyme([uo, uó, uọ], [c, t, p]).
+
+unconstrained_rhyme([uô, uồ, uố, uổ, uỗ, uộ], ['', i, m, n, ng]).
+kpt_rhyme([uô, uố, uộ], [c, t, p]).
+
+unconstrained_rhyme([uơ, uờ, uớ, uở, uỡ, uợ], ['']).
+
+unconstrained_rhyme([uy, ùy, úy, ủy, ũy, ụy], ['', a, u, n, nh]).
+kpt_rhyme([uy, úy, ụy], [ch, t, p]).
+
+unconstrained_rhyme([ươ, ườ, ướ, ưở, ưỡ, ượ], ['', i, u, m, n, ng]).
+kpt_rhyme([ươ, ướ, ượ], ['', c, p, t]).
+
+unconstrained_rhyme([uye, uyè, uyé, uyẻ, uyẽ, uyẹ], ['', n]).
+kpt_rhyme([uye, uyé, uyẹ], [t]).
+
+unconstrained_rhyme([uyê, uyề, uyế, uyể, uyễ, uyệ], ['', n]).
+kpt_rhyme([uyê, uyế, uyệ], [t]).
+
+unconstrained_rhyme([ye, yè, yé, yẻ, yẽ, yẹ], ['', u, m, n, ng]).
+kpt_rhyme([ye, yé, yẹ], [t]).
+
+unconstrained_rhyme([yê, yề, yế, yể, yễ, yệ], ['', u, m, n, ng]).
+kpt_rhyme([yê, yế, yệ], [t]).
+
+nuclei_mod(mod_hat_a, a, â).
+nuclei_mod(mod_hat_a, ă, â).
+nuclei_mod(mod_hat_a, â, â).
+nuclei_mod(mod_hat_a, ua, uâ).
+
+nuclei_mod(mod_hat_e, e, ê).
+nuclei_mod(mod_hat_e, ie, iê).
+nuclei_mod(mod_hat_e, ue, uê).
+nuclei_mod(mod_hat_e, uye, uyê).
+nuclei_mod(mod_hat_e, ye, yê).
+
+nuclei_mod(mod_hat_o, o, ô).
+nuclei_mod(mod_hat_o, ơ, ô).
+nuclei_mod(mod_hat_o, uo, uô).
+
+nuclei_mod(mod_breve_a, a, ă).
+nuclei_mod(mod_breve_a, â, ă).
+nuclei_mod(mod_breve_a, oa, oă).
+
+nuclei_mod(mod_horn_u, u, ư).
+
+nuclei_mod(mod_horn_o, o, ơ).
+nuclei_mod(mod_horn_o, ô, ơ).
+
+nuclei_mod(mod_horn_uo, uo, ươ).
+nuclei_mod(mod_horn_uo, ưo, ươ).
+
+% Adding 'o' to 'ư' has the effect of creating 'ươ'
+nuclei_mod(mod_complete_horn_uo, ư, ươ).
+
+:- begin_tests(syllable_parser).
+
+test(empty) :- phrase(syllable('', '', '', tone_blank), []).
+test(consonant_only) :- 
+    phrase(syllable(c, '', '', tone_blank), [c]),
+    phrase(syllable(gh, '', '', tone_blank), [g, h]),
+    phrase(syllable(ngh, '', '', tone_blank), [n, g, h]),
+    phrase(syllable(k, '', '', tone_blank), [k]).
+
+test(vowel_only) :- phrase(syllable('', a, '', tone_blank), [a]).
+test(no_initial_consonant) :- phrase(syllable('', a, c, tone_blank), [a, c]).
+test(full) :- phrase(syllable(nh, a, c, tone_blank), [n, h, a, c]).
+
+test(gi) :- phrase(syllable(g, i, '', tone_blank), [g, i]).
+test(gia) :- phrase(syllable(gi, a, '', tone_blank), [g, i, a]).
+test(giam) :- phrase(syllable(gi, a, m, tone_blank), [g, i, a, m]).
+
+test(qu) :- phrase(syllable(q, u, '', tone_blank), [q, u]).
+test(qua) :- phrase(syllable(qu, a, '', tone_blank), [q, u, a]).
+test(quan) :- phrase(syllable(qu, a, n, tone_blank), [q, u, a, n]).
+
+test(extract_tone) :- phrase(syllable(nh, a, nh, tone_acute), [n, h, á, n, h]).
+
+test(apply_tone) :-
+    phrase(syllable(Onset, Nuclei, Final, _), [n, h, a, n, h]),
+    phrase(syllable(Onset, Nuclei, Final, tone_acute), [n, h, á, n, h]).
+
+test(apply_nuclei_mod) :-
+    phrase(syllable(Onset, Nuclei, Final, Tone), [á, m]),
+    nuclei_mod(mod_hat_a, Nuclei, NucleiMod),
+    phrase(syllable(Onset, NucleiMod, Final, Tone), [ấ, m]).
+
+:- end_tests(syllable_parser).
+
+:- begin_tests(process_key).
+
+test(append_to_empty_string) :- process_key(a, [], [a]).
+test(add_tone) :- process_key(s, [a], [á]).
+test(add_mod_breve_a) :- process_key(w, [a], [ă]).
+test(add_mod_d) :- process_key(d, [d], [đ]).
+
+:- end_tests(process_key).
+
+:- begin_tests(process_key_sequence).
+
+test(append_to_empty_string) :- process_key_sequence([a], [a]).
+
+test(simple_tone) :- 
+    process_key_sequence([a, f], [à]),
+    process_key_sequence([a, s], [á]),
+    process_key_sequence([a, r], [ả]),
+    process_key_sequence([a, x], [ã]),
+    process_key_sequence([a, j], [ạ]).
+
+test(fallback_to_raw_sequence) :-
+    process_key_sequence([a, s, s], [a, s, s]).
+
+:- end_tests(process_key_sequence).
+
+test :-
+    findall((
+        format("Test case: ~s ~s ~n", [A, B]),
+        process_atom(A, B)
+    ), test_case(A, B), Goals),
+    maplist(call, Goals).
