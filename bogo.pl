@@ -144,7 +144,7 @@ unconstrained_rhyme([â, ầ, ấ, ẩ, ẫ, ậ], ['', u, y, m, n, ng]).
 kpt_rhyme([â, ấ, ậ], [c, t, p]).
 
 unconstrained_rhyme([e, è, é, ẻ, ẽ, ẹ], ['', o, u, m, n, ng, nh]).
-kpt_rhyme([e, é, ẹ], [c, t, p]).
+kpt_rhyme([e, é, ẹ], [c, ch, t, p]).
 
 unconstrained_rhyme([ê, ề, ế, ể, ễ, ệ], ['', u, m, n, ng, nh]).
 kpt_rhyme([ê, ế, ệ], [c, ch, t, p]).
@@ -193,7 +193,7 @@ kpt_rhyme([oe, oé, oẹ], [t]).
 unconstrained_rhyme([oe, òe, óe, ỏe, õe, ọe], ['', o, m, n]).
 kpt_rhyme([oe, óe, ọe], [t]).
 
-unconstrained_rhyme([oo, oò, oó, oỏ, oõ, oọ], ['', ng]).
+unconstrained_rhyme([oo, oò, oó, oỏ, oõ, oọ], ['', n, ng]).
 kpt_rhyme([oo, oó, oọ], [c]).
 
 unconstrained_rhyme([ua, ùa, úa, ủa, ũa, ụa], ['', y, n, ng]).
@@ -205,10 +205,10 @@ kpt_rhyme([ua, uá, uạ], [t]).
 unconstrained_rhyme([uâ, uầ, uấ, uẩ, uẫ, uậ], ['', y, n, ng]).
 kpt_rhyme([uâ, uấ, uậ], [t]).
 
-unconstrained_rhyme([ue, uè, ué, uẻ, uẽ, uẹ], ['', nh]).
+unconstrained_rhyme([ue, uè, ué, uẻ, uẽ, uẹ], ['', n, nh]).
 kpt_rhyme([ue, ué, uẹ], [c, ch]).
 
-unconstrained_rhyme([uê, uề, uế, uể, uễ, uệ], ['', nh]).
+unconstrained_rhyme([uê, uề, uế, uể, uễ, uệ], ['', n, nh]).
 kpt_rhyme([uê, uế, uệ], [c, ch]).
 
 unconstrained_rhyme([uo, uò, uó, uỏ, uõ, uọ], ['', i, u, m, n, ng]).
@@ -349,6 +349,8 @@ test(fallback_to_raw_sequence) :-
 :- begin_tests(process_atom).
 
 test(quyeen) :- process_atom('quyeen', 'quyên').
+test(quyeen) :- process_atom('dueenhf', 'duềnh').
+test(bejche) :- process_atom('bejche', 'bệch').
 
 :- end_tests(process_atom).
 
