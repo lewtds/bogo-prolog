@@ -42,7 +42,7 @@ int process_text(NSString* input, NSString **output) {
     int rval = PL_call_predicate(NULL, PL_Q_NORMAL, pred, h0);
     
     char* tmp_out;
-    int success = PL_get_chars(h1, &tmp_out, CVT_LIST | REP_UTF8);
+    int success = PL_get_chars(h1, &tmp_out, CVT_ALL | REP_UTF8);
     
     *output = [NSString stringWithUTF8String:tmp_out];
     return success;

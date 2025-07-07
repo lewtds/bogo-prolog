@@ -36,7 +36,26 @@ class IMKitSampleInputController: IMKInputController {
     override func deactivateServer(_ sender: Any!) {
         NSLog("🔴 IME deactivated")
     }
-
+    
+    override func didCommand(by aSelector: Selector!, client sender: Any!) -> Bool {
+        unprocessed_text = ""
+        sent_text = ""
+        return false
+    }
+    
+    override func cancelComposition() {
+        NSLog("cancelComposition")
+    }
+    
+    override func commitComposition(_ sender: Any!) {
+        NSLog("commitComposition")
+    }
+    
+    override func recognizedEvents(_ sender: Any!) -> Int {
+        NSLog("recognizedEvents")
+        return super.recognizedEvents(sender)
+    }
+    
     override func inputText(_ string: String!, client sender: Any!) -> Bool {
         // get client to insert
         guard let client = sender as? IMKTextInput else {
@@ -52,7 +71,7 @@ class IMKitSampleInputController: IMKInputController {
         
         unprocessed_text.append(string)
         var processed_text: NSString?
-        NSLog("processing text")
+//        NSLog("processing thoeutext")
         let success = process_text(unprocessed_text, &processed_text)
 
         if (success != 1) {
@@ -61,9 +80,11 @@ class IMKitSampleInputController: IMKInputController {
         }
 
         let replacement_len = sent_text.count
+        
         client.insertText(processed_text!,
                           replacementRange: NSRange(location: client.selectedRange().location - replacement_len, length: replacement_len))
         sent_text = processed_text! as String
+//        NSLog("committed \(sent_text)")
         
         return true
         

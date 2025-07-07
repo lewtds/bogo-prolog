@@ -1,25 +1,15 @@
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <SWI-Prolog.h>
 
-#define MAXLINE 1024
 
-int
-main(int argc, char **argv)
-{ char expression[MAXLINE];
-  char *e = expression;
+int main(int argc, char **argv)
+{ 
+  
   char *program = argv[0];
   char *plav[2];
   int n;
-
-  /* combine all the arguments in a single string */
-
-  for(n=1; n<argc; n++)
-  { if ( n != 1 )
-      *e++ = ' ';
-    strcpy(e, argv[n]);
-    e += strlen(e);
-  }
 
   /* make the argument vector for Prolog */
 
@@ -40,22 +30,15 @@ main(int argc, char **argv)
 
     PL_put_atom_chars(h0, "ddoongj");
     rval = PL_call_predicate(NULL, PL_Q_NORMAL, pred, h0);
+    assert(rval == 1);
     char* output;
-    size_t len;
 
-    int success = PL_get_chars(h1, &output, CVT_LIST | REP_UTF8);
+    int success = PL_get_chars(h1, &output, CVT_ALL | REP_UTF8);
     if (success) {
       printf("%s\n", output);
     } else {
       printf("failed\n");
     }
-
-
-    // for (int i = 0; i < len; i++) {
-    //   printf("%02X %d", (unsigned char) output[i], PL_is_atom(h1));
-    // }
-
-    // printf('\n');
 
     PL_halt(rval ? 0 : 1);
   }

@@ -26,7 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         var processed_text: NSString?
         NSLog("processing text")
-        let success = process_text("ddoongj", &processed_text)
+        let success = process_text("nooix", &processed_text)
         NSLog("Success = \(success) result=\(processed_text)")
     }
 
