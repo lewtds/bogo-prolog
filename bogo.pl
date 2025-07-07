@@ -1,34 +1,38 @@
 :- set_prolog_flag(encoding, utf8).
 :- include(test_cases).
-:- use_module(library(dcg/high_order)).
 
-% The main idea of this Vietnamese input method engine is that of a syllable parser. A Vietnamese syllable (âm tiết)
-% consists of an onset (phụ âm đầu), a rhyme (vần) and a tone (thanh điệu). The rhyme itself consists of a 
+% The core idea of this Vietnamese input method engine is that of a syllable parser. A Vietnamese syllable (âm tiết)
+% consists of an onset (phụ âm đầu), a rhyme (vần) and a tone (thanh điệu). The rhyme itself consists of a
 % nuclei (âm chính), a final (âm cuối), which could be either a consonant or a vowel. For example the syllable "nhanh" is parsed as followed:
-% 
+%
 % ?- phrase(syllable(Onset, Nuclei, Final, Tone), [n, h, a, n, h]).
 % Onset = Final, Final = nh,
 % Nuclei = a,
 % Tone = tone_blank
-% 
+%
 % Similarly, "nhai" is parsed as:
-% 
+%
 % ?- phrase(syllable(Onset, Nuclei, Final, Tone), [n, h, a, i]).
 % Onset = nh,
 % Nuclei = a,
 % Final = i,
-% Tone = tone_blank 
-% 
+% Tone = tone_blank
+%
 % Because this is Prolog, the parser can work in generator mode as well so we can produce the text for a syllable given its components.
 % For example, to change the tone of "nhai" to acute, we can do the following:
-% 
+%
 % ?- phrase(syllable(nh, a, i, tone_acute), Text).
-% Text = [n, h, á, i] 
-% 
-% The input method engine contains a database of legal combinations [1] and will parse the input keys and apply the 
+% Text = [n, h, á, i]
+%
+% The input method engine contains a database of legal combinations [1] and will parse the input keys and apply the
 % appropriate modifications to the syllable.
-% 
+%
 % [1]: https://www.hieuthi.com/blog/2017/03/21/all-vietnamese-syllables.html
+% 
+
+% The main entry point for the input method engine is the process_atom/2 predicate. Usage example:
+% ?- process_atom('ddoongj', OutputAtom).
+% OutputAtom = động.
 
 % TELEX
 key_effect(f, add_tone(tone_grave)).
@@ -92,12 +96,12 @@ apply_key_effect(syllable(Onset, Nuclei, Final, Tone), Key, syllable(Onset, Nucl
     key_effect(Key, add_tone(NewTone)),
     Tone \= NewTone.
 
-% Add a nuclei modification
+% Add a nuclei modification (eg. a -> ă, e -> ê, o -> ô)
 apply_key_effect(syllable(Onset, Nuclei, Final, Tone), Key, syllable(Onset, NucleiModded, Final, Tone)) :-
     key_effect(Key, add_nuclei_mod(Mod)),
     nuclei_mod(Mod, Nuclei, NucleiModded).
 
-% Add an onset modification
+% Add an onset modification (eg. d -> đ)
 apply_key_effect(syllable(d, Nuclei, Final, Tone), Key, syllable(đ, Nuclei, Final, Tone)) :-
     key_effect(Key, add_onset_mod(mod_dash_d)).
 
@@ -314,7 +318,7 @@ nuclei_mod(mod_complete_horn_uo, ư, ươ).
 :- begin_tests(syllable_parser).
 
 test(empty) :- phrase(syllable('', '', '', tone_blank), []).
-test(consonant_only) :- 
+test(consonant_only) :-
     phrase(syllable(c, '', '', tone_blank), [c]),
     phrase(syllable(gh, '', '', tone_blank), [g, h]),
     phrase(syllable(ngh, '', '', tone_blank), [n, g, h]),
@@ -340,6 +344,11 @@ test(r) :- phrase(syllable(r, '', '', tone_blank), [r]).
 test(ye_should_not_have_onset, [fail]) :- phrase(syllable(_, _, _, tone_blank), [m, y, e]).
 test(yê_should_not_have_onset, [fail]) :- phrase(syllable(_, _, _, tone_blank), [m, y, ê]).
 
+test(k_has_restricted_nucleis, [fail]) :- phrase(syllable(_, _, _, tone_blank), [k, a]).
+test(k_has_restricted_nucleis, [fail]) :- phrase(syllable(_, _, _, tone_blank), [k, o]).
+
+test(e_has_restricted_onsets, [fail, fixme('todo')]) :- phrase(syllable(_, _, _, tone_blank), [c, e]).
+
 test(extract_tone) :- phrase(syllable(nh, a, nh, tone_acute), [n, h, á, n, h]).
 
 :- end_tests(syllable_parser).
@@ -358,7 +367,7 @@ test(rej) :-
 
 :- begin_tests(process_key).
 
-test(append_to_empty_string, all(Key == [a, b, c, d, e, g, h, i, k, l, m, n, o, p, q, r, s, t, u, v, x, y, z])) :- 
+test(append_to_empty_string, all(Key == [a, b, c, d, e, g, h, i, k, l, m, n, o, p, q, r, s, t, u, v, x, y, z])) :-
     member(Key, [a, b, c, d, e, g, h, i, k, l, m, n, o, p, q, r, s, t, u, v, x, y, z]),
     process_key(Key, [], [Key]).
 
@@ -372,7 +381,7 @@ test(add_mod_d) :- process_key(d, [d], [đ]).
 
 test(append_to_empty_string) :- process_key_sequence([a], [a]).
 
-test(simple_tone) :- 
+test(simple_tone) :-
     process_key_sequence([a, f], [à]),
     process_key_sequence([a, s], [á]),
     process_key_sequence([a, r], [ả]),
