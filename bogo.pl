@@ -31,6 +31,7 @@ process_atom(InputAtom, OutputAtom) :-
 
 process_key_sequence(Keys, OutString) :-
     foldl(process_key, Keys, [], OutString), !.
+
 % If the key sequence cannot be processed, return the keys as is.
 process_key_sequence(Keys, Keys).
 
@@ -77,7 +78,6 @@ apply_key_effect(syllable(d, Nuclei, Final, Tone), Key, syllable(đ, Nuclei, Fin
 
 syllable('', '', '', tone_blank) --> [].
 syllable(O, '', '', tone_blank) --> onset(O), { O \= '' }.
-syllable(O, '', '', tone_blank) --> { member(O, [k, gh, ngh]), atom_chars(O, Os) }, Os.
 
 % gi and qu are only allowed to be onset if they are followed by a rhyme
 syllable(gi, N, F, T) --> [g, i], rhyme(N, F, T), {
@@ -88,6 +88,9 @@ syllable(qu, N, F, T) --> [q, u], rhyme(N, F, T), {
 }.
 
 % ngh, gh and k can either standalone with no rhyme or be followed by i, e, ê, ie, iê
+syllable(k, '', '', tone_blank) --> [k].
+syllable(gh, '', '', tone_blank) --> [g, h].
+syllable(ngh, '', '', tone_blank) --> [n, g, h].
 syllable(ngh, N, F, T) --> [n, g, h], rhyme(N, F, T), { member(N, [i, e, ê, ie, iê]) }.
 syllable(gh, N, F, T) --> [g, h], rhyme(N, F, T), { member(N, [i, e, ê, ie, iê]) }.
 syllable(k, N, F, T) --> [k], rhyme(N, F, T), { member(N, [i, y, e, ê, ie, iê]) }.
@@ -98,7 +101,6 @@ syllable(O, N, F, T) --> onset(O), rhyme(N, F, T), {
 syllable('', N, F, T) --> rhyme(N, F, T).
 
 onset(O) --> { member(O, [
-    % gi, qu,
     b, d, h, l, m, n, p, r, s, t, v, q, x, z, đ,
     tr, th, ch, ph, nh, kh,
     ng, g, c
