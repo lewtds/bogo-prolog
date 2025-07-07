@@ -101,8 +101,14 @@ apply_key_effect(syllable(Onset, Nuclei, Final, Tone), Key, syllable(Onset, Nucl
 apply_key_effect(syllable(d, Nuclei, Final, Tone), Key, syllable(đ, Nuclei, Final, Tone)) :-
     key_effect(Key, add_onset_mod(mod_dash_d)).
 
+%%
+%% Syllable Parser
+%%
 
+% An empty syllable
 syllable('', '', '', tone_blank) --> [].
+
+% A syllable with only an onset
 syllable(O, '', '', tone_blank) --> onset(O), { O \= '' }.
 
 % gi and qu are only allowed to be onset if they are followed by a rhyme
@@ -110,6 +116,14 @@ syllable(gi, N, F, T) --> [g, i], rhyme(N, F, T), {
     N \= 'ye', N \= 'yê'
 }.
 syllable(qu, N, F, T) --> [q, u], rhyme(N, F, T), {
+    N \= 'ye', N \= 'yê'
+}.
+
+% A syllable with only a rhyme
+syllable('', N, F, T) --> rhyme(N, F, T).
+
+% A "normal" syllable with both an onset and a rhyme
+syllable(O, N, F, T) --> onset(O), rhyme(N, F, T), {
     N \= 'ye', N \= 'yê'
 }.
 
@@ -121,11 +135,6 @@ syllable(ngh, N, F, T) --> [n, g, h], rhyme(N, F, T), { member(N, [i, e, ê, ie,
 syllable(gh, N, F, T) --> [g, h], rhyme(N, F, T), { member(N, [i, e, ê, ie, iê]) }.
 syllable(k, N, F, T) --> [k], rhyme(N, F, T), { member(N, [i, y, e, ê, ie, iê]) }.
 
-syllable(O, N, F, T) --> onset(O), rhyme(N, F, T), {
-    N \= 'ye', N \= 'yê'
-}.
-syllable('', N, F, T) --> rhyme(N, F, T).
-
 onset(O) --> { member(O, [
     b, d, h, l, m, n, p, r, s, t, v, q, x, z, đ,
     tr, th, ch, ph, nh, kh,
@@ -134,11 +143,13 @@ onset(O) --> { member(O, [
 
 
 rhyme(Nuclei, Final, Tone) --> {
-    rhyme_with_tone(Nuclei, Final, Tone, RWTones),
+    rhyme_with_tone(RWTones, Nuclei, Final, Tone),
     atom_chars(RWTones, Rs)
 }, Rs.
 
-rhyme_with_tone(NucleiNoTone, Final, Tone, Rhyme) :- 
+% rhyme_with_tone unpacks the legal rhymes DB below and relate a rhyme to its nuclei, final and tone.
+% eg. rhyme_with_tone(ươ, ng, tone_grave, ường).
+rhyme_with_tone(Rhyme, NucleiNoTone, Final, Tone) :-
     (
         unconstrained_rhyme([Nuclei, _, _, _, _, _], Finals), NucleiNoTone = Nuclei, Tone = tone_blank;
         unconstrained_rhyme([NucleiNoTone, Nuclei, _, _, _, _], Finals), Tone = tone_grave;
