@@ -337,9 +337,8 @@ test(quye) :- phrase(syllable(q, uye, '', tone_blank), [q, u, y, e]).
 
 test(r) :- phrase(syllable(r, '', '', tone_blank), [r]).
 
-test(ye_should_not_have_onset) :- 
-    \+ phrase(syllable(_, _, _, tone_blank), [m, y, e]),
-    \+ phrase(syllable(_, _, _, tone_blank), [m, y, ê]).
+test(ye_should_not_have_onset, [fail]) :- phrase(syllable(_, _, _, tone_blank), [m, y, e]).
+test(yê_should_not_have_onset, [fail]) :- phrase(syllable(_, _, _, tone_blank), [m, y, ê]).
 
 test(extract_tone) :- phrase(syllable(nh, a, nh, tone_acute), [n, h, á, n, h]).
 
