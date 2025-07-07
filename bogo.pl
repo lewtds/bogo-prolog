@@ -2,6 +2,34 @@
 :- include(test_cases).
 :- use_module(library(dcg/high_order)).
 
+% The main idea of this Vietnamese input method engine is that of a syllable parser. A Vietnamese syllable (âm tiết)
+% consists of an onset (phụ âm đầu), a rhyme (vần) and a tone (thanh điệu). The rhyme itself consists of a 
+% nuclei (âm chính), a final (âm cuối), which could be either a consonant or a vowel. For example the syllable "nhanh" is parsed as followed:
+% 
+% ?- phrase(syllable(Onset, Nuclei, Final, Tone), [n, h, a, n, h]).
+% Onset = Final, Final = nh,
+% Nuclei = a,
+% Tone = tone_blank
+% 
+% Similarly, "nhai" is parsed as:
+% 
+% ?- phrase(syllable(Onset, Nuclei, Final, Tone), [n, h, a, i]).
+% Onset = nh,
+% Nuclei = a,
+% Final = i,
+% Tone = tone_blank 
+% 
+% Because this is Prolog, the parser can work in generator mode as well so we can produce the text for a syllable given its components.
+% For example, to change the tone of "nhai" to acute, we can do the following:
+% 
+% ?- phrase(syllable(nh, a, i, tone_acute), Text).
+% Text = [n, h, á, i] 
+% 
+% The input method engine contains a database of legal combinations [1] and will parse the input keys and apply the 
+% appropriate modifications to the syllable.
+% 
+% [1]: https://www.hieuthi.com/blog/2017/03/21/all-vietnamese-syllables.html
+
 % TELEX
 key_effect(f, add_tone(tone_grave)).
 key_effect(s, add_tone(tone_acute)).
@@ -73,8 +101,6 @@ apply_key_effect(syllable(Onset, Nuclei, Final, Tone), Key, syllable(Onset, Nucl
 apply_key_effect(syllable(d, Nuclei, Final, Tone), Key, syllable(đ, Nuclei, Final, Tone)) :-
     key_effect(Key, add_onset_mod(mod_dash_d)).
 
-
-% https://www.hieuthi.com/blog/2017/03/21/all-vietnamese-syllables.html
 
 syllable('', '', '', tone_blank) --> [].
 syllable(O, '', '', tone_blank) --> onset(O), { O \= '' }.
